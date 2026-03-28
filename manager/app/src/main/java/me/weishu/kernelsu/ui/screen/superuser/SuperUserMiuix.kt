@@ -202,8 +202,6 @@ fun SuperUserPagerMiuix(
                 onSearchStatusChange = actions.onSearchStatusChange,
                 defaultResult = {},
                 searchBarTopPadding = dynamicTopPadding,
-                hazeState = hazeState,
-                hazeStyle = hazeStyle
             ) {
                 val imeBottomPadding = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
                 LazyColumn(
@@ -595,7 +593,6 @@ private fun GroupItem(
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(colorScheme.onSurfaceVariantActions),
             )
-        }
         }
         
         SuperListPopup(
