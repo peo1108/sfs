@@ -87,6 +87,8 @@ import me.weishu.kernelsu.ui.component.miuix.SearchPager
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.defaultHazeEffect
+import me.weishu.kernelsu.ui.util.rememberGyroTilt
+import me.weishu.kernelsu.ui.util.rememberGyroGlowBrush
 import me.weishu.kernelsu.ui.util.download
 import me.weishu.kernelsu.ui.util.rememberContentReady
 import top.yukonga.miuix.kmp.basic.Card
@@ -239,12 +241,11 @@ fun ModuleRepoScreenMiuix(
                     }
                     items(displaySearch, key = { it.moduleId }, contentType = { "module" }) { module ->
                         val miniCardShape = ContinuousRoundedRectangle(16.dp)
-                        val miniGlowBrush = Brush.linearGradient(
-                            colors = listOf(
-                                Color.White.copy(alpha = 0.25f),
-                                colorScheme.primary.copy(alpha = 0.10f),
-                                Color.White.copy(alpha = 0.08f),
-                            )
+                        val tilt = rememberGyroTilt()
+                        val miniGlowBrush = rememberGyroGlowBrush(
+                            primaryColor = Color.White,
+                            accentColor = colorScheme.primary,
+                            tilt = tilt.value
                         )
 
                         Card(

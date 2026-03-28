@@ -46,6 +46,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import com.kyant.capsule.ContinuousRoundedRectangle
+import me.weishu.kernelsu.ui.util.rememberGyroTilt
+import me.weishu.kernelsu.ui.util.rememberGyroGlowBrush
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
@@ -200,12 +202,11 @@ private fun AppProfileInner(
     val templates = remember { listAppProfileTemplates() }
 
     val cardShape = ContinuousRoundedRectangle(16.dp)
-    val glowBrush = Brush.linearGradient(
-        colors = listOf(
-            Color.White.copy(alpha = 0.25f),
-            colorScheme.primary.copy(alpha = 0.10f),
-            Color.White.copy(alpha = 0.08f),
-        )
+    val tilt = rememberGyroTilt()
+    val glowBrush = rememberGyroGlowBrush(
+        primaryColor = Color.White,
+        accentColor = colorScheme.primary,
+        tilt = tilt.value
     )
 
     Column(

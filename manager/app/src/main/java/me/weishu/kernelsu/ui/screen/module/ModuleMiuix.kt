@@ -113,6 +113,8 @@ import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopupMiuix
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.getFileName
+import me.weishu.kernelsu.ui.util.rememberGyroTilt
+import me.weishu.kernelsu.ui.util.rememberGyroGlowBrush
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.DropdownImpl
@@ -752,12 +754,11 @@ fun ModuleItem(
     var expanded by rememberSaveable(module.id) { mutableStateOf(false) }
 
     val miniCardShape = ContinuousRoundedRectangle(16.dp)
-    val miniGlowBrush = Brush.linearGradient(
-        colors = listOf(
-            Color.White.copy(alpha = 0.25f),
-            colorScheme.primary.copy(alpha = 0.10f),
-            Color.White.copy(alpha = 0.08f),
-        )
+    val tilt = rememberGyroTilt()
+    val miniGlowBrush = rememberGyroGlowBrush(
+        primaryColor = Color.White,
+        accentColor = colorScheme.primary,
+        tilt = tilt.value
     )
 
     Card(
