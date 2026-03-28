@@ -123,7 +123,17 @@ fun AppProfileScreen(uid: Int) {
                 if (!Natives.setAppProfile(updatedProfile)) {
                     showMessage(failToUpdateAppProfile)
                 } else {
+                    // Show Dynamic Island notification when root permission changes
+                    val wasAllowSu = profile.allowSu
                     profile = updatedProfile
+                    if (wasAllowSu != updatedProfile.allowSu) {
+                        val appLabel = primaryAppInfo.label
+                        if (updatedProfile.allowSu) {
+                            showMessage("🔓 $appLabel — Superuser Granted")
+                        } else {
+                            showMessage("🔒 $appLabel — Superuser Revoked")
+                        }
+                    }
                     if (uiMode == UiMode.Material) {
                         viewModel.loadAppList()
                     }
