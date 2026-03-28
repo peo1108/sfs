@@ -56,7 +56,9 @@ jobs:
           printf '\x7fELF' > app/src/main/jniLibs/x86_64/libksud.so
 
       - name: Build with Gradle
-        run: ./gradlew clean assembleRelease
+        run: |
+          chmod +x ./gradlew
+          ./gradlew clean assembleRelease
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
