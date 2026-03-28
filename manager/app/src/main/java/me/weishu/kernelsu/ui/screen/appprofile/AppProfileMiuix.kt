@@ -41,12 +41,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.foundation.border
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
+
+
+
+
 import com.kyant.capsule.ContinuousRoundedRectangle
-import me.weishu.kernelsu.ui.util.rememberGyroTilt
+
 import me.weishu.kernelsu.ui.util.rememberGyroGlowBrush
 import me.weishu.kernelsu.ui.util.rememberGyroRadialGlow
 import me.weishu.kernelsu.ui.util.doubleBezelCard

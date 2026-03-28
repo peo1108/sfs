@@ -113,7 +113,7 @@ import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopupMiuix
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.getFileName
-import me.weishu.kernelsu.ui.util.rememberGyroTilt
+
 import me.weishu.kernelsu.ui.util.rememberGyroGlowBrush
 import me.weishu.kernelsu.ui.util.doubleBezelCard
 import me.weishu.kernelsu.ui.util.pressScale

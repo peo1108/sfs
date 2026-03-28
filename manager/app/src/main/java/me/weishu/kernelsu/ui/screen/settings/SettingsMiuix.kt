@@ -31,10 +31,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.border
+
 import androidx.compose.foundation.layout.Column
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
+
+
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import me.weishu.kernelsu.ui.util.rememberGyroGlowBrush
@@ -361,19 +361,13 @@ fun SettingPagerMiuix(
                 if (uiState.isLkmMode) {
                     Card(colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)), // iOS 26
                         modifier = Modifier
-                            .padding(top = 16.dp) // iOS 26
+                            .padding(top = 16.dp)
                             .fillMaxWidth()
-                            .shadow(
-                                elevation = 6.dp,
+                            .pressScale()
+                            .doubleBezelCard(
                                 shape = miniCardShape,
-                                ambientColor = colorScheme.primary.copy(alpha = 0.15f),
-                                spotColor = colorScheme.primary.copy(alpha = 0.10f)
-                            )
-                            .clip(miniCardShape)
-                            .border(
-                                width = 0.5.dp,
-                                brush = miniGlowBrush,
-                                shape = miniCardShape
+                                glowBrush = miniGlowBrush,
+                                radialGlow = radialGlow,
                             ),
                     ) {
                         val uninstall = stringResource(id = R.string.settings_uninstall)
