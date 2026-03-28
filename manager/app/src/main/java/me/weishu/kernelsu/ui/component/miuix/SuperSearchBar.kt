@@ -369,7 +369,7 @@ fun SearchBarFake(
             )
         },
         modifier = Modifier
-            .let { if (!enableBlur) it.background(colorScheme.surface) else it }
+            .background(colorScheme.surfaceContainerHigh.copy(alpha = 0.35f), shape = androidx.compose.foundation.shape.RoundedCornerShape(25.dp))
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .padding(
