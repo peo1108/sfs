@@ -342,29 +342,19 @@ private fun StatusCard(
                             .fillMaxHeight()
                     ) {
                         val miniCardShape = ContinuousRoundedRectangle(16.dp)
-                        val miniGlowBrush = Brush.linearGradient(
-                            colors = listOf(
-                                Color.White.copy(alpha = 0.25f),
-                                colorScheme.primary.copy(alpha = 0.10f),
-                                Color.White.copy(alpha = 0.08f),
-                            )
-                        )
+                        val tiltValue = me.weishu.kernelsu.ui.util.LocalGyroTilt.current
+                        val miniGlowBrush = rememberGyroGlowBrush(tilt = tiltValue)
+                        val radialGlow = rememberGyroRadialGlow(tilt = tiltValue)
 
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f)
-                                .shadow(
-                                    elevation = 6.dp,
+                                .pressScale()
+                                .doubleBezelCard(
                                     shape = miniCardShape,
-                                    ambientColor = colorScheme.primary.copy(alpha = 0.15f),
-                                    spotColor = colorScheme.primary.copy(alpha = 0.10f)
-                                )
-                                .clip(miniCardShape)
-                                .border(
-                                    width = 0.5.dp,
-                                    brush = miniGlowBrush,
-                                    shape = miniCardShape
+                                    glowBrush = miniGlowBrush,
+                                    radialGlow = radialGlow,
                                 ),
                             colors = CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)),
                             insideMargin = PaddingValues(16.dp),

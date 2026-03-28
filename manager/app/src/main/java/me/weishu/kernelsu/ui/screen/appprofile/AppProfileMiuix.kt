@@ -50,6 +50,7 @@ import me.weishu.kernelsu.ui.util.rememberGyroTilt
 import me.weishu.kernelsu.ui.util.rememberGyroGlowBrush
 import me.weishu.kernelsu.ui.util.rememberGyroRadialGlow
 import me.weishu.kernelsu.ui.util.doubleBezelCard
+import me.weishu.kernelsu.ui.util.pressScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
@@ -410,17 +411,11 @@ private fun AppProfileInner(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .padding(bottom = if (rootMode != Mode.Default) 12.dp else 0.dp)
-                    .shadow(
-                        elevation = 6.dp,
+                    .pressScale()
+                    .doubleBezelCard(
                         shape = cardShape,
-                        ambientColor = colorScheme.primary.copy(alpha = 0.15f),
-                        spotColor = colorScheme.primary.copy(alpha = 0.10f)
-                    )
-                    .clip(cardShape)
-                    .border(
-                        width = 0.5.dp,
-                        brush = glowBrush,
-                        shape = cardShape
+                        glowBrush = glowBrush,
+                        radialGlow = radialGlow,
                     ),
                 colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.2f))
             ) {
@@ -460,17 +455,11 @@ private fun AppProfileInner(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .padding(bottom = if (nonRootMode != Mode.Default) 12.dp else 0.dp)
-                    .shadow(
-                        elevation = 6.dp,
+                    .pressScale()
+                    .doubleBezelCard(
                         shape = cardShape,
-                        ambientColor = colorScheme.primary.copy(alpha = 0.15f),
-                        spotColor = colorScheme.primary.copy(alpha = 0.10f)
-                    )
-                    .clip(cardShape)
-                    .border(
-                        width = 0.5.dp,
-                        brush = glowBrush,
-                        shape = cardShape
+                        glowBrush = glowBrush,
+                        radialGlow = radialGlow,
                     ),
                 colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.2f))
             ) {
@@ -499,17 +488,11 @@ private fun AppProfileInner(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 12.dp)
-                    .shadow(
-                        elevation = 6.dp,
+                    .pressScale()
+                    .doubleBezelCard(
                         shape = cardShape,
-                        ambientColor = colorScheme.primary.copy(alpha = 0.15f),
-                        spotColor = colorScheme.primary.copy(alpha = 0.10f)
-                    )
-                    .clip(cardShape)
-                    .border(
-                        width = 0.5.dp,
-                        brush = glowBrush,
-                        shape = cardShape
+                        glowBrush = glowBrush,
+                        radialGlow = radialGlow,
                     ),
                 colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.2f))
             ) {
