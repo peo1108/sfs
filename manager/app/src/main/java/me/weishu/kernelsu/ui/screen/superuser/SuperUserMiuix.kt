@@ -82,6 +82,7 @@ import me.weishu.kernelsu.ui.util.rememberGyroTilt
 import me.weishu.kernelsu.ui.util.rememberGyroGlowBrush
 import me.weishu.kernelsu.ui.util.doubleBezelCard
 import me.weishu.kernelsu.ui.util.pressScale
+import me.weishu.kernelsu.ui.util.rememberGyroRadialGlow
 import me.weishu.kernelsu.ui.util.ownerNameForUid
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
@@ -499,6 +500,7 @@ private fun GroupItem(
         accentColor = colorScheme.primary,
         tilt = tilt.value
     )
+    val radialGlow = rememberGyroRadialGlow(tilt = tilt.value)
 
     Card(
         modifier = Modifier
@@ -516,6 +518,7 @@ private fun GroupItem(
             .doubleBezelCard(
                 shape = miniCardShape,
                 glowBrush = miniGlowBrush,
+                radialGlow = radialGlow,
             ),
         colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)),
         onClick = onClickPrimary,

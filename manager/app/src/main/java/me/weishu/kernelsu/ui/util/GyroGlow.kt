@@ -16,8 +16,8 @@ import androidx.compose.ui.platform.LocalContext
 data class GyroTilt(val x: Float = 0f, val y: Float = 0f)
 
 /**
- * Reads the accelerometer tilt of the device and returns normalized tilt values.
- * Used for the "Gyro Shine" light reflection effect on Cards.
+ * Reads the accelerometer tilt of the device and returns animated tilt values.
+ * Shared across the composition tree via CompositionLocal for efficiency.
  */
 @Composable
 fun rememberGyroTilt(): State<GyroTilt> {
@@ -50,11 +50,8 @@ fun rememberGyroTilt(): State<GyroTilt> {
 }
 
 /**
- * Creates a dynamic linear gradient brush that ACTUALLY shifts direction based on device tilt.
- * The gradient start/end Offsets move with the accelerometer, simulating real light reflection.
- *
- * FIX: Previous version computed startX/startY but never used them in Brush.linearGradient.
- * Now uses Offset-based start/end to create a truly dynamic gradient direction.
+ * Creates a border glow brush that shifts direction based on tilt.
+ * Uses Offset-based start/end for real gradient movement.
  */
 @Composable
 fun rememberGyroGlowBrush(
@@ -62,25 +59,49 @@ fun rememberGyroGlowBrush(
     accentColor: Color = Color(0xFF007AFF),
     tilt: GyroTilt = GyroTilt()
 ): Brush {
-    // Use tilt to shift gradient direction — this is the key fix!
-    // When phone tilts left (x > 0), light moves right; tilt right (x < 0), light moves left
-    // When phone tilts forward (y > 0), light moves down; tilt back (y < 0), light moves up
     val startX = (0.5f - tilt.x * 0.5f).coerceIn(0f, 1f) * 1000f
     val startY = (0.5f - tilt.y * 0.5f).coerceIn(0f, 1f) * 1000f
     val endX = (0.5f + tilt.x * 0.5f).coerceIn(0f, 1f) * 1000f
     val endY = (0.5f + tilt.y * 0.5f).coerceIn(0f, 1f) * 1000f
 
-    // Dynamic alpha intensity based on tilt magnitude
     val tiltMagnitude = kotlin.math.sqrt(tilt.x * tilt.x + tilt.y * tilt.y).coerceIn(0f, 1f)
-    val highlightAlpha = 0.20f + tiltMagnitude * 0.30f  // 0.20 at rest → 0.50 at max tilt
+    val highlightAlpha = 0.25f + tiltMagnitude * 0.35f
 
     return Brush.linearGradient(
         colors = listOf(
             primaryColor.copy(alpha = highlightAlpha),
-            accentColor.copy(alpha = 0.08f + tiltMagnitude * 0.12f),
+            accentColor.copy(alpha = 0.10f + tiltMagnitude * 0.15f),
             primaryColor.copy(alpha = 0.05f),
         ),
         start = Offset(startX, startY),
         end = Offset(endX, endY)
+    )
+}
+
+/**
+ * Creates a radial light spot brush that follows device tilt.
+ * This is the PRIMARY visual effect — a glowing "flashlight" spot on the card surface.
+ */
+@Composable
+fun rememberGyroRadialGlow(
+    color: Color = Color.White,
+    tilt: GyroTilt = GyroTilt()
+): Brush {
+    // Map tilt to center position: when phone tilts left, light moves right
+    val centerX = (0.5f - tilt.x * 0.45f).coerceIn(0.05f, 0.95f)
+    val centerY = (0.5f - tilt.y * 0.35f).coerceIn(0.05f, 0.95f)
+    val tiltMagnitude = kotlin.math.sqrt(tilt.x * tilt.x + tilt.y * tilt.y).coerceIn(0f, 1f)
+
+    // Brighter when tilting more
+    val intensity = 0.06f + tiltMagnitude * 0.14f
+
+    return Brush.radialGradient(
+        colors = listOf(
+            color.copy(alpha = intensity),
+            color.copy(alpha = intensity * 0.3f),
+            Color.Transparent,
+        ),
+        center = Offset(centerX * 1000f, centerY * 600f),
+        radius = 400f
     )
 }

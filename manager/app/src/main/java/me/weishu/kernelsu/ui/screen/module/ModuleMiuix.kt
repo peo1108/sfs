@@ -117,6 +117,7 @@ import me.weishu.kernelsu.ui.util.rememberGyroTilt
 import me.weishu.kernelsu.ui.util.rememberGyroGlowBrush
 import me.weishu.kernelsu.ui.util.doubleBezelCard
 import me.weishu.kernelsu.ui.util.pressScale
+import me.weishu.kernelsu.ui.util.rememberGyroRadialGlow
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.DropdownImpl
@@ -761,6 +762,7 @@ fun ModuleItem(
         accentColor = colorScheme.primary,
         tilt = tilt.value
     )
+    val radialGlow = rememberGyroRadialGlow(tilt = tilt.value)
 
     Card(
         modifier = Modifier
@@ -770,6 +772,7 @@ fun ModuleItem(
             .doubleBezelCard(
                 shape = miniCardShape,
                 glowBrush = miniGlowBrush,
+                radialGlow = radialGlow,
             ),
         colors = CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)),
         insideMargin = PaddingValues(16.dp),

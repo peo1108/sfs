@@ -6,7 +6,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -17,13 +16,15 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 /**
  * iOS 26 Double Bezel Card modifier.
  *
- * Creates a "volumetric" card effect with two layers:
- * 1. Outer glow border: GyroGlow-powered dynamic light reflection
- * 2. Inner top-edge highlight: A thin bright line simulating light hitting the top edge
- * 3. Shadow: Deep shadow beneath creating 3D "floating" illusion
+ * Creates a "volumetric" card with THREE layers of visual depth:
+ * 1. Deep shadow underneath → card "floats" above background
+ * 2. Outer glow border → GyroGlow dynamic light reflection (1dp width for visibility)
+ * 3. Radial glow spot → moving "flashlight" on card surface based on device tilt
+ * 4. Top-edge highlight → subtle gradient at top edge for 3D bezel
  *
  * @param shape The card shape
- * @param glowBrush The outer glow border brush (typically from rememberGyroGlowBrush)
+ * @param glowBrush The outer glow border brush (from rememberGyroGlowBrush)
+ * @param radialGlow Optional radial glow brush (from rememberGyroRadialGlow) for surface light spot
  * @param shadowElevation Shadow depth
  * @param ambientColor Shadow ambient color
  * @param spotColor Shadow spot color
@@ -32,15 +33,15 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 fun Modifier.doubleBezelCard(
     shape: Shape,
     glowBrush: Brush,
+    radialGlow: Brush? = null,
     shadowElevation: Dp = 8.dp,
     ambientColor: Color = MiuixTheme.colorScheme.primary.copy(alpha = 0.18f),
     spotColor: Color = MiuixTheme.colorScheme.primary.copy(alpha = 0.12f),
 ): Modifier {
-    // Inner bezel: top-edge light highlight brush
     val topHighlightBrush = Brush.verticalGradient(
         colors = listOf(
-            Color.White.copy(alpha = 0.30f),
-            Color.White.copy(alpha = 0.05f),
+            Color.White.copy(alpha = 0.22f),
+            Color.White.copy(alpha = 0.03f),
             Color.Transparent,
         ),
         startY = 0f,
@@ -48,7 +49,7 @@ fun Modifier.doubleBezelCard(
     )
 
     return this
-        // Layer 1: Deep shadow for 3D floating effect
+        // Layer 1: Deep shadow
         .shadow(
             elevation = shadowElevation,
             shape = shape,
@@ -56,19 +57,26 @@ fun Modifier.doubleBezelCard(
             spotColor = spotColor
         )
         .clip(shape)
-        // Layer 2: Outer glow border (GyroGlow dynamic)
-        .border(
-            width = 0.5.dp,
-            brush = glowBrush,
-            shape = shape
-        )
-        // Layer 3: Inner top-edge highlight (second bezel)
+        // Layer 2+3+4: Draw content with overlays
         .drawWithContent {
+            // Draw the actual card content first
             drawContent()
-            // Draw a subtle top highlight gradient overlay
+
+            // Layer 3: Radial glow spot (moving flashlight based on gyro tilt)
+            if (radialGlow != null) {
+                drawRect(brush = radialGlow, size = size)
+            }
+
+            // Layer 4: Top-edge highlight (second bezel - subtle white highlight at top)
             drawRect(
                 brush = topHighlightBrush,
                 size = size.copy(height = 60.dp.toPx().coerceAtMost(size.height))
             )
         }
+        // Layer 2: Outer glow border (1dp for visibility, GyroGlow powered)
+        .border(
+            width = 1.dp,
+            brush = glowBrush,
+            shape = shape
+        )
 }
