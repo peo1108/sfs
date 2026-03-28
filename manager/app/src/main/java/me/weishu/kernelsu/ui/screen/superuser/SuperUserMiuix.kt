@@ -494,13 +494,13 @@ private fun GroupItem(
 
     // iOS 26: GroupItem glow border with real-time gyro reflection
     val miniCardShape = ContinuousRoundedRectangle(16.dp)
-    val tilt = rememberGyroTilt()
+    val tiltValue = me.weishu.kernelsu.ui.util.LocalGyroTilt.current
     val miniGlowBrush = rememberGyroGlowBrush(
         primaryColor = Color.White,
         accentColor = colorScheme.primary,
-        tilt = tilt.value
+        tilt = tiltValue
     )
-    val radialGlow = rememberGyroRadialGlow(tilt = tilt.value)
+    val radialGlow = rememberGyroRadialGlow(tilt = tiltValue)
 
     Card(
         modifier = Modifier

@@ -48,6 +48,8 @@ import androidx.compose.ui.graphics.Brush
 import com.kyant.capsule.ContinuousRoundedRectangle
 import me.weishu.kernelsu.ui.util.rememberGyroTilt
 import me.weishu.kernelsu.ui.util.rememberGyroGlowBrush
+import me.weishu.kernelsu.ui.util.rememberGyroRadialGlow
+import me.weishu.kernelsu.ui.util.doubleBezelCard
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
@@ -201,12 +203,13 @@ private fun AppProfileInner(
     val templates = remember { listAppProfileTemplates() }
 
     val cardShape = ContinuousRoundedRectangle(16.dp)
-    val tilt = rememberGyroTilt()
+    val tiltValue = me.weishu.kernelsu.ui.util.LocalGyroTilt.current
     val glowBrush = rememberGyroGlowBrush(
         primaryColor = Color.White,
         accentColor = colorScheme.primary,
-        tilt = tilt.value
+        tilt = tiltValue
     )
+    val radialGlow = rememberGyroRadialGlow(tilt = tiltValue)
 
     Column(
         modifier = modifier
@@ -215,8 +218,13 @@ private fun AppProfileInner(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .padding(bottom = 12.dp),
-            colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.2f)),
+                .padding(bottom = 12.dp)
+                .then(Modifier.doubleBezelCard(
+                    shape = cardShape,
+                    glowBrush = glowBrush,
+                    radialGlow = radialGlow,
+                )),
+            colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)),
             insideMargin = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
         ) {
             Row(

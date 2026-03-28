@@ -159,7 +159,8 @@ class MainActivity : ComponentActivity() {
                 LocalEnableFloatingBottomBar provides uiState.enableFloatingBottomBar,
                 LocalEnableFloatingBottomBarBlur provides uiState.enableFloatingBottomBarBlur,
                 LocalUiMode provides uiMode,
-                LocalSnackbarHost provides snackBarHostState
+                LocalSnackbarHost provides snackBarHostState,
+                me.weishu.kernelsu.ui.util.LocalGyroTilt provides me.weishu.kernelsu.ui.util.rememberGyroTilt().value
             ) {
                 KernelSUTheme(appSettings = appSettings, uiMode = uiMode) {
                     Box(modifier = Modifier.fillMaxSize()) {

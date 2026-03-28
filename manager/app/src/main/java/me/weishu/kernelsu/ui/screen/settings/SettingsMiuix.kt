@@ -37,6 +37,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import me.weishu.kernelsu.ui.util.rememberGyroGlowBrush
+import me.weishu.kernelsu.ui.util.rememberGyroRadialGlow
+import me.weishu.kernelsu.ui.util.doubleBezelCard
+import me.weishu.kernelsu.ui.util.pressScale
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
@@ -109,15 +113,15 @@ fun SettingPagerMiuix(
         popupHost = { },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
-        // iOS 26: Settings Card glow border
+        // iOS 26: Settings Card glow border with gyro
         val miniCardShape = com.kyant.capsule.ContinuousRoundedRectangle(16.dp)
-        val miniGlowBrush = Brush.linearGradient(
-            colors = listOf(
-                Color.White.copy(alpha = 0.25f),
-                colorScheme.primary.copy(alpha = 0.10f),
-                Color.White.copy(alpha = 0.08f),
-            )
+        val tiltValue = me.weishu.kernelsu.ui.util.LocalGyroTilt.current
+        val miniGlowBrush = rememberGyroGlowBrush(
+            primaryColor = Color.White,
+            accentColor = colorScheme.primary,
+            tilt = tiltValue
         )
+        val radialGlow = rememberGyroRadialGlow(tilt = tiltValue)
 
         LazyColumn(
             modifier = Modifier
@@ -132,21 +136,15 @@ fun SettingPagerMiuix(
             item {
                 Card(
                     modifier = Modifier
-                        .padding(top = 16.dp) // iOS 26: more spacing between groups
+                        .padding(top = 16.dp)
                         .fillMaxWidth()
-                        .shadow(
-                            elevation = 6.dp,
+                        .pressScale()
+                        .doubleBezelCard(
                             shape = miniCardShape,
-                            ambientColor = colorScheme.primary.copy(alpha = 0.15f),
-                            spotColor = colorScheme.primary.copy(alpha = 0.10f)
-                        )
-                        .clip(miniCardShape)
-                        .border(
-                            width = 0.5.dp,
-                            brush = miniGlowBrush,
-                            shape = miniCardShape
+                            glowBrush = miniGlowBrush,
+                            radialGlow = radialGlow,
                         ),
-                    colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)) // iOS 26
+                    colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f))
                 ) {
                     Column {
                         IOSSuperSwitch(

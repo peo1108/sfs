@@ -50,6 +50,12 @@ fun rememberGyroTilt(): State<GyroTilt> {
 }
 
 /**
+ * CompositionLocal for sharing a single GyroTilt across the entire composition tree.
+ * Provide this at the screen level to avoid creating multiple sensor listeners.
+ */
+val LocalGyroTilt = staticCompositionLocalOf { GyroTilt() }
+
+/**
  * Creates a border glow brush that shifts direction based on tilt.
  * Uses Offset-based start/end for real gradient movement.
  */
