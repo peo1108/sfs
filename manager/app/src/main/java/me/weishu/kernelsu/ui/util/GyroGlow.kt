@@ -30,11 +30,12 @@ fun rememberGyroTilt(): State<GyroTilt> {
 
         val listener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
-                val rawX = (event.values[0] / 9.8f).coerceIn(-1f, 1f)
-                val rawY = (event.values[1] / 9.8f).coerceIn(-1f, 1f)
-                // Lerp smoothing: prevents micro-jitter from raw sensor noise
+                // Amplified sensitivity: /4f instead of /9.8f → responds to gentle tilts
+                val rawX = (event.values[0] / 4f).coerceIn(-1f, 1f)
+                val rawY = (event.values[1] / 4f).coerceIn(-1f, 1f)
+                // Lerp smoothing: higher = more responsive, lower = smoother
                 val prev = tiltState.value
-                val smooth = 0.12f
+                val smooth = 0.18f
                 tiltState.value = GyroTilt(
                     x = prev.x + (rawX - prev.x) * smooth,
                     y = prev.y + (rawY - prev.y) * smooth
@@ -71,13 +72,13 @@ fun rememberGyroGlowBrush(
     accentColor: Color = Color(0xFF007AFF),
     tilt: GyroTilt = GyroTilt()
 ): Brush {
-    val startX = (0.5f - tilt.x * 0.5f).coerceIn(0f, 1f) * 1000f
-    val startY = (0.5f - tilt.y * 0.5f).coerceIn(0f, 1f) * 1000f
-    val endX = (0.5f + tilt.x * 0.5f).coerceIn(0f, 1f) * 1000f
-    val endY = (0.5f + tilt.y * 0.5f).coerceIn(0f, 1f) * 1000f
+    val startX = (0.5f - tilt.x * 0.8f).coerceIn(0f, 1f) * 1000f
+    val startY = (0.5f - tilt.y * 0.8f).coerceIn(0f, 1f) * 1000f
+    val endX = (0.5f + tilt.x * 0.8f).coerceIn(0f, 1f) * 1000f
+    val endY = (0.5f + tilt.y * 0.8f).coerceIn(0f, 1f) * 1000f
 
     val tiltMagnitude = kotlin.math.sqrt(tilt.x * tilt.x + tilt.y * tilt.y).coerceIn(0f, 1f)
-    val highlightAlpha = 0.25f + tiltMagnitude * 0.35f
+    val highlightAlpha = 0.20f + tiltMagnitude * 0.50f
 
     return Brush.linearGradient(
         colors = listOf(
@@ -99,13 +100,13 @@ fun rememberGyroRadialGlow(
     color: Color = Color.White,
     tilt: GyroTilt = GyroTilt()
 ): Brush {
-    // Map tilt to center position: when phone tilts left, light moves right
-    val centerX = (0.5f - tilt.x * 0.45f).coerceIn(0.05f, 0.95f)
-    val centerY = (0.5f - tilt.y * 0.35f).coerceIn(0.05f, 0.95f)
+    // Map tilt to center position: wider range for more dramatic light movement
+    val centerX = (0.5f - tilt.x * 0.7f).coerceIn(0.02f, 0.98f)
+    val centerY = (0.5f - tilt.y * 0.55f).coerceIn(0.02f, 0.98f)
     val tiltMagnitude = kotlin.math.sqrt(tilt.x * tilt.x + tilt.y * tilt.y).coerceIn(0f, 1f)
 
-    // Brighter when tilting more
-    val intensity = 0.06f + tiltMagnitude * 0.14f
+    // More visible glow intensity
+    val intensity = 0.08f + tiltMagnitude * 0.22f
 
     return Brush.radialGradient(
         colors = listOf(
