@@ -498,7 +498,7 @@ private fun TopBar(
         } else {
             Modifier
         },
-        color = if (enableBlur) Color.Transparent else colorScheme.surface,
+        color = Color.Transparent,
         title = stringResource(R.string.profile),
         navigationIcon = {
             IconButton(

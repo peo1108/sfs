@@ -98,8 +98,9 @@ fun ColorPaletteScreenMiuix(
     val hazeState = remember { HazeState() }
     val hazeStyle = if (enableBlurState) {
         HazeStyle(
-            backgroundColor = colorScheme.surface,
-            tint = HazeTint(colorScheme.surface.copy(0.8f))
+            backgroundColor = Color.Transparent,
+            tint = HazeTint(colorScheme.surface.copy(0.05f)),
+            blurRadius = 25.dp
         )
     } else {
         HazeStyle.Unspecified
@@ -109,6 +110,7 @@ fun ColorPaletteScreenMiuix(
     val isDark = currentColorMode.isDark || currentColorMode.isSystem && isSystemInDarkTheme()
 
     Scaffold(
+        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 modifier = if (enableBlurState) {
@@ -116,7 +118,7 @@ fun ColorPaletteScreenMiuix(
                 } else {
                     Modifier
                 },
-                color = if (enableBlurState) Color.Transparent else colorScheme.surface,
+                color = Color.Transparent,
                 title = stringResource(R.string.settings_theme),
                 navigationIcon = {
                     IconButton(

@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
@@ -61,8 +62,9 @@ fun ExecuteModuleActionScreenMiuix(
     val hazeState = remember { HazeState() }
     val hazeStyle = if (enableBlur) {
         HazeStyle(
-            backgroundColor = colorScheme.surface,
-            tint = HazeTint(colorScheme.surface.copy(0.8f))
+            backgroundColor = Color.Transparent,
+            tint = HazeTint(colorScheme.surface.copy(0.05f)),
+            blurRadius = 25.dp
         )
     } else {
         HazeStyle.Unspecified
@@ -71,6 +73,7 @@ fun ExecuteModuleActionScreenMiuix(
     BackHandler { }
 
     Scaffold(
+        containerColor = Color.Transparent,
         topBar = {
             TopBar(
                 onBack = actions.onBack,
@@ -134,6 +137,7 @@ private fun TopBar(
             Modifier
         },
         title = stringResource(R.string.action),
+        color = Color.Transparent,
         navigationIcon = {
             IconButton(
                 modifier = Modifier.padding(start = 16.dp),

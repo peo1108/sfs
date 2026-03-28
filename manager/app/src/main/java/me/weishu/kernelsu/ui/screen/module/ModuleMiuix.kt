@@ -259,18 +259,20 @@ fun ModulePagerMiuix(
     val hazeState = remember { HazeState() }
     val hazeStyle = if (enableBlur) {
         HazeStyle(
-            backgroundColor = colorScheme.surface,
-            tint = HazeTint(colorScheme.surface.copy(0.8f))
+            backgroundColor = Color.Transparent,
+            tint = HazeTint(colorScheme.surface.copy(0.05f)),
+            blurRadius = 25.dp
         )
     } else {
         HazeStyle.Unspecified
     }
 
     Scaffold(
+        containerColor = Color.Transparent,
         topBar = {
             searchStatus.TopAppBarAnim(hazeState = hazeState, hazeStyle = hazeStyle) {
                 TopAppBar(
-                    color = if (enableBlur) Color.Transparent else colorScheme.surface,
+                    color = Color.Transparent,
                     title = stringResource(R.string.module),
                     actions = {
                         Box {

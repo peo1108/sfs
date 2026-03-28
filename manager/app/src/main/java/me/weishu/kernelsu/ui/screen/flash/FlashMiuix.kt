@@ -74,8 +74,9 @@ fun FlashScreenMiuix(
     val hazeState = remember { HazeState() }
     val hazeStyle = if (enableBlur) {
         HazeStyle(
-            backgroundColor = colorScheme.surface,
-            tint = HazeTint(colorScheme.surface.copy(0.8f))
+            backgroundColor = Color.Transparent,
+            tint = HazeTint(colorScheme.surface.copy(0.05f)),
+            blurRadius = 25.dp
         )
     } else {
         HazeStyle.Unspecified
@@ -89,6 +90,7 @@ fun FlashScreenMiuix(
     }
 
     Scaffold(
+        containerColor = Color.Transparent,
         topBar = {
             TopBar(
                 state.flashingStatus,
@@ -185,7 +187,7 @@ private fun TopBar(
                 FlashingStatus.FAILED -> R.string.flash_failed
             }
         ),
-        color = if (enableBlur) Color.Transparent else colorScheme.surface,
+        color = Color.Transparent,
         navigationIcon = {
             IconButton(
                 modifier = Modifier.padding(start = 16.dp),
