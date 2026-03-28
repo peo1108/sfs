@@ -491,7 +491,7 @@ fun ModulePagerMiuix(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    InfiniteProgressIndicator()
+                    me.weishu.kernelsu.ui.component.ModuleListSkeleton()
                 }
             } else {
                 PullToRefresh(

@@ -221,7 +221,7 @@ fun AppProfileTemplateScreenMiuix(
                         )
                     }
                 } else {
-                    InfiniteProgressIndicator()
+                    me.weishu.kernelsu.ui.component.ModuleListSkeleton()
                 }
             }
         }

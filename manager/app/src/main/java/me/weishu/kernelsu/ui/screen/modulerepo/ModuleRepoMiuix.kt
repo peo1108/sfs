@@ -388,7 +388,7 @@ fun ModuleRepoScreenMiuix(
                             )
                         }
                     } else {
-                        InfiniteProgressIndicator()
+                        me.weishu.kernelsu.ui.component.ModuleListSkeleton()
                     }
                 }
             }
@@ -598,7 +598,7 @@ private fun ReadmePage(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    InfiniteProgressIndicator()
+                    me.weishu.kernelsu.ui.component.ModuleListSkeleton()
                 }
             }
             AnimatedVisibility(

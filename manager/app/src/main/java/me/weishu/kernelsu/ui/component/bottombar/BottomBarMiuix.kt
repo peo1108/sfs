@@ -35,6 +35,7 @@ import me.weishu.kernelsu.ui.theme.LocalEnableFloatingBottomBar
 import me.weishu.kernelsu.ui.theme.LocalEnableFloatingBottomBarBlur
 import me.weishu.kernelsu.ui.util.defaultHazeEffect
 import me.weishu.kernelsu.ui.util.rootAvailable
+import me.weishu.kernelsu.ui.util.pressScale
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.NavigationBar
 import top.yukonga.miuix.kmp.basic.NavigationBarItem
@@ -76,7 +77,7 @@ fun BottomBarMiuix(
             content = {
                 items.forEachIndexed { index, item ->
                     NavigationBarItem(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f).pressScale(0.8f),
                         icon = item.icon,
                         label = item.label,
                         selected = mainState.selectedPage == index,
@@ -107,7 +108,7 @@ fun BottomBarMiuix(
                     onClick = {
                         mainState.animateToPage(index)
                     },
-                    modifier = Modifier.defaultMinSize(minWidth = 76.dp)
+                    modifier = Modifier.defaultMinSize(minWidth = 76.dp).pressScale(0.85f)
                 ) {
                     Icon(
                         imageVector = item.icon,

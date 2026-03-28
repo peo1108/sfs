@@ -311,10 +311,10 @@ fun SuperUserPagerMiuix(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    InfiniteProgressIndicator()
+                    me.weishu.kernelsu.ui.component.AppListSkeleton()
                 }
             } else {
-                val expandedUids = remember { mutableStateOf(setOf<Int>()) }
+                val expandedUids = remember { androidx.compose.runtime.mutableStateOf(setOf<Int>()) }
                 PullToRefresh(
                     isRefreshing = uiState.isRefreshing,
                     pullToRefreshState = pullToRefreshState,
