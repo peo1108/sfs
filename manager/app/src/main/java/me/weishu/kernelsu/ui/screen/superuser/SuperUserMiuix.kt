@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -219,16 +220,22 @@ fun SuperUserPagerMiuix(
                     item {
                         Spacer(Modifier.height(6.dp))
                     }
-                    items(uiState.searchResults, key = { it.uid }, contentType = { "group" }) { group ->
+                    items(uiState.searchResults.size, key = { uiState.searchResults[it].uid }, contentType = { "group" }) { index ->
+                        val group = uiState.searchResults[index]
                         val expanded = expandedSearchUids.value.contains(group.uid)
                         AnimatedVisibility(
                             visible = uiState.searchResults.isNotEmpty(),
-                            enter = fadeIn() + expandVertically(),
-                            exit = fadeOut() + shrinkVertically()
+                            enter = fadeIn(animationSpec = spring(stiffness = 400f)) + expandVertically(
+                                animationSpec = spring(dampingRatio = 0.7f, stiffness = 400f)
+                            ),
+                            exit = fadeOut(animationSpec = spring(stiffness = 500f)) + shrinkVertically(
+                                animationSpec = spring(dampingRatio = 0.8f, stiffness = 500f)
+                            )
                         ) {
                             Column {
                                 GroupItem(
                                     group = group,
+                                    index = index,
                                     onToggleExpand = {
                                         if (group.apps.size > 1) {
                                             expandedSearchUids.value =
@@ -240,14 +247,19 @@ fun SuperUserPagerMiuix(
                                 }
                                 AnimatedVisibility(
                                     visible = expanded && group.apps.size > 1,
-                                    enter = expandVertically() + fadeIn(),
-                                    exit = shrinkVertically() + fadeOut()
+                                    enter = expandVertically(
+                                        animationSpec = spring(dampingRatio = 0.7f, stiffness = 400f)
+                                    ) + fadeIn(animationSpec = spring(stiffness = 400f)),
+                                    exit = shrinkVertically(
+                                        animationSpec = spring(dampingRatio = 0.8f, stiffness = 500f)
+                                    ) + fadeOut(animationSpec = spring(stiffness = 500f))
                                 ) {
                                     Column {
-                                        group.apps.forEach { app ->
+                                        group.apps.forEachIndexed { appIndex, app ->
                                             SimpleAppItem(
                                                 app = app,
                                                 matched = group.matchedPackageNames.contains(app.packageName),
+                                                index = appIndex,
                                             )
                                         }
                                         Spacer(Modifier.height(6.dp))
@@ -331,11 +343,13 @@ fun SuperUserPagerMiuix(
                             end = innerPadding.calculateEndPadding(layoutDirection)
                         ),
                                             ) {
-                        items(uiState.groupedApps, key = { it.uid }, contentType = { "group" }) { group ->
+                        items(uiState.groupedApps.size, key = { uiState.groupedApps[it].uid }, contentType = { "group" }) { index ->
+                            val group = uiState.groupedApps[index]
                             val expanded = expandedUids.value.contains(group.uid)
                             Column {
                                 GroupItem(
                                     group = group,
+                                    index = index,
                                     onToggleExpand = {
                                         if (group.apps.size > 1) {
                                             expandedUids.value =
@@ -347,12 +361,16 @@ fun SuperUserPagerMiuix(
                                 }
                                 AnimatedVisibility(
                                     visible = expanded && group.apps.size > 1,
-                                    enter = expandVertically() + fadeIn(),
-                                    exit = shrinkVertically() + fadeOut()
+                                    enter = expandVertically(
+                                        animationSpec = spring(dampingRatio = 0.7f, stiffness = 400f)
+                                    ) + fadeIn(animationSpec = spring(stiffness = 400f)),
+                                    exit = shrinkVertically(
+                                        animationSpec = spring(dampingRatio = 0.8f, stiffness = 500f)
+                                    ) + fadeOut(animationSpec = spring(stiffness = 500f))
                                 ) {
                                     Column {
-                                        group.apps.forEach { app ->
-                                            SimpleAppItem(app = app)
+                                        group.apps.forEachIndexed { appIndex, app ->
+                                            SimpleAppItem(app = app, index = appIndex)
                                         }
                                         Spacer(Modifier.height(6.dp))
                                     }
@@ -373,14 +391,16 @@ fun SuperUserPagerMiuix(
 private fun SimpleAppItem(
     app: AppInfo,
     matched: Boolean = false,
+    index: Int = 0,
 ) {
     val animatedProgress = remember { Animatable(0f) }
     LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(index * 35L) // Stagger 35ms per sub-item
         animatedProgress.animateTo(
             targetValue = 1f,
-            animationSpec = tween(
-                durationMillis = 800, 
-                easing = FastOutSlowInEasing
+            animationSpec = spring(
+                dampingRatio = 0.65f,
+                stiffness = 300f
             )
         )
     }
@@ -389,10 +409,10 @@ private fun SimpleAppItem(
         modifier = Modifier.graphicsLayer {
             val inverseProgress = 1f - animatedProgress.value
             alpha = animatedProgress.value
-            translationX = inverseProgress * 400.dp.toPx()
-            translationY = inverseProgress * 600.dp.toPx()
-            scaleX = 0.9f + 0.1f * animatedProgress.value
-            scaleY = 0.9f + 0.1f * animatedProgress.value
+            translationX = inverseProgress * 100.dp.toPx()
+            translationY = inverseProgress * 60.dp.toPx()
+            scaleX = 0.92f + 0.08f * animatedProgress.value
+            scaleY = 0.92f + 0.08f * animatedProgress.value
         }
     ) {
         Box(
@@ -445,6 +465,7 @@ private fun SimpleAppItem(
 @Composable
 private fun GroupItem(
     group: GroupedApps,
+    index: Int = 0,
     onToggleExpand: () -> Unit,
     onClickPrimary: () -> Unit,
 ) {
@@ -477,11 +498,13 @@ private fun GroupItem(
     var showContextMenu by remember { mutableStateOf(false) }
     val haptic = LocalHapticFeedback.current
     LaunchedEffect(Unit) {
+        // Stagger delay: each card enters 35ms after the previous one → wave effect
+        kotlinx.coroutines.delay(index * 35L)
         animatedProgress.animateTo(
             targetValue = 1f,
-            animationSpec = tween(
-                durationMillis = 800, 
-                easing = FastOutSlowInEasing
+            animationSpec = spring(
+                dampingRatio = 0.65f, // Bouncy like iOS
+                stiffness = 300f      // Smooth but responsive
             )
         )
     }
@@ -504,10 +527,11 @@ private fun GroupItem(
             .graphicsLayer {
                 val inverseProgress = 1f - animatedProgress.value
                 alpha = animatedProgress.value
-                translationX = inverseProgress * 400.dp.toPx()
-                translationY = inverseProgress * 600.dp.toPx()
-                scaleX = 0.9f + 0.1f * animatedProgress.value
-                scaleY = 0.9f + 0.1f * animatedProgress.value
+                // Softer diagonal entry from bottom-right
+                translationX = inverseProgress * 120.dp.toPx()
+                translationY = inverseProgress * 80.dp.toPx()
+                scaleX = 0.92f + 0.08f * animatedProgress.value
+                scaleY = 0.92f + 0.08f * animatedProgress.value
             }
             .doubleBezelCard(
                 shape = miniCardShape,
