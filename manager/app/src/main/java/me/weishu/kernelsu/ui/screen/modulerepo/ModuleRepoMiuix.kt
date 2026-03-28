@@ -220,6 +220,8 @@ fun ModuleRepoScreenMiuix(
         popupHost = {
             searchStatus.SearchPager(
                 onSearchStatusChange = actions.onSearchStatusChange,
+                hazeState = hazeState,
+                hazeStyle = hazeStyle,
                 defaultResult = {},
                 searchBarTopPadding = dynamicTopPadding,
             ) {

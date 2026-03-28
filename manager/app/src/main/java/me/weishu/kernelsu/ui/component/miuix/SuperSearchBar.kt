@@ -159,6 +159,8 @@ fun SearchStatus.SearchPager(
         SearchBar(searchStatus, onStatusChange, padding)
     },
     searchBarTopPadding: Dp = 12.dp,
+    hazeState: HazeState? = null,
+    hazeStyle: HazeStyle? = null,
     result: @Composable () -> Unit
 ) {
     val searchStatus = this
@@ -185,7 +187,13 @@ fun SearchStatus.SearchPager(
         modifier = Modifier
             .fillMaxSize()
             .zIndex(5f)
-            .drawBehind { drawRect(surfaceColor.copy(alpha = surfaceAlpha)) }
+            .then(
+                if (hazeState != null && hazeStyle != null) {
+                    Modifier.defaultHazeEffect(hazeState, hazeStyle)
+                } else {
+                    Modifier.drawBehind { drawRect(surfaceColor.copy(alpha = surfaceAlpha)) }
+                }
+            )
             .semantics { onClick { false } }
             .then(
                 if (!searchStatus.isCollapsed()) Modifier.pointerInput(Unit) { } else Modifier

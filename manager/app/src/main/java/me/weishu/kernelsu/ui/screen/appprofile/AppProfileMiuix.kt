@@ -41,6 +41,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.foundation.border
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import com.kyant.capsule.ContinuousRoundedRectangle
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
@@ -193,6 +198,15 @@ private fun AppProfileInner(
     val userId = appUid / 100000
     val appId = appUid % 100000
     val templates = remember { listAppProfileTemplates() }
+
+    val cardShape = ContinuousRoundedRectangle(16.dp)
+    val glowBrush = Brush.linearGradient(
+        colors = listOf(
+            Color.White.copy(alpha = 0.25f),
+            colorScheme.primary.copy(alpha = 0.10f),
+            Color.White.copy(alpha = 0.08f),
+        )
+    )
 
     Column(
         modifier = modifier
@@ -387,7 +401,19 @@ private fun AppProfileInner(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .padding(bottom = if (rootMode != Mode.Default) 12.dp else 0.dp),
+                    .padding(bottom = if (rootMode != Mode.Default) 12.dp else 0.dp)
+                    .shadow(
+                        elevation = 6.dp,
+                        shape = cardShape,
+                        ambientColor = colorScheme.primary.copy(alpha = 0.15f),
+                        spotColor = colorScheme.primary.copy(alpha = 0.10f)
+                    )
+                    .clip(cardShape)
+                    .border(
+                        width = 0.5.dp,
+                        brush = glowBrush,
+                        shape = cardShape
+                    ),
                 colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.2f))
             ) {
                 AnimatedVisibility(
@@ -425,7 +451,19 @@ private fun AppProfileInner(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .padding(bottom = if (nonRootMode != Mode.Default) 12.dp else 0.dp),
+                    .padding(bottom = if (nonRootMode != Mode.Default) 12.dp else 0.dp)
+                    .shadow(
+                        elevation = 6.dp,
+                        shape = cardShape,
+                        ambientColor = colorScheme.primary.copy(alpha = 0.15f),
+                        spotColor = colorScheme.primary.copy(alpha = 0.10f)
+                    )
+                    .clip(cardShape)
+                    .border(
+                        width = 0.5.dp,
+                        brush = glowBrush,
+                        shape = cardShape
+                    ),
                 colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.2f))
             ) {
                 AnimatedVisibility(
@@ -452,7 +490,19 @@ private fun AppProfileInner(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .padding(bottom = 12.dp),
+                    .padding(bottom = 12.dp)
+                    .shadow(
+                        elevation = 6.dp,
+                        shape = cardShape,
+                        ambientColor = colorScheme.primary.copy(alpha = 0.15f),
+                        spotColor = colorScheme.primary.copy(alpha = 0.10f)
+                    )
+                    .clip(cardShape)
+                    .border(
+                        width = 0.5.dp,
+                        brush = glowBrush,
+                        shape = cardShape
+                    ),
                 colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.2f))
             ) {
                 Spacer(Modifier.height(3.dp))
