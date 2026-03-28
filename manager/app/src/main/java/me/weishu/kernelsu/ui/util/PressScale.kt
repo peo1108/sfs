@@ -20,7 +20,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun Modifier.pressScale(
     pressedScale: Float = 0.94f,
-    overshootScale: Float = 1.02f,
     enabled: Boolean = true
 ): Modifier {
     if (!enabled) return this
@@ -40,14 +39,10 @@ fun Modifier.pressScale(
                 }
                 val up = waitForUpOrCancellation()
                 scope.launch {
-                    // Bounce overshoot then settle
-                    scale.animateTo(
-                        overshootScale,
-                        animationSpec = spring(dampingRatio = 0.4f, stiffness = 600f)
-                    )
+                    // Single spring with low damping → natural overshoot + settle
                     scale.animateTo(
                         1f,
-                        animationSpec = spring(dampingRatio = 0.5f, stiffness = 400f)
+                        animationSpec = spring(dampingRatio = 0.45f, stiffness = 400f)
                     )
                 }
             }

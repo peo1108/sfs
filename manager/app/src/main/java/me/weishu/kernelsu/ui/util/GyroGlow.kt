@@ -32,7 +32,13 @@ fun rememberGyroTilt(): State<GyroTilt> {
             override fun onSensorChanged(event: SensorEvent) {
                 val rawX = (event.values[0] / 9.8f).coerceIn(-1f, 1f)
                 val rawY = (event.values[1] / 9.8f).coerceIn(-1f, 1f)
-                tiltState.value = GyroTilt(x = rawX, y = rawY)
+                // Lerp smoothing: prevents micro-jitter from raw sensor noise
+                val prev = tiltState.value
+                val smooth = 0.12f
+                tiltState.value = GyroTilt(
+                    x = prev.x + (rawX - prev.x) * smooth,
+                    y = prev.y + (rawY - prev.y) * smooth
+                )
             }
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
         }

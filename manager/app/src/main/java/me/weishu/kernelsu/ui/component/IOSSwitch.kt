@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -19,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
@@ -58,7 +58,6 @@ fun IOSSwitch(
 
     // Calculate max offset: (51 - 27 - 2*2) = 20.dp
     val maxOffset = trackWidth - thumbSize - (padding * 2)
-    val thumbOffset = maxOffset * animatedProgress
 
     Box(
         modifier = modifier
@@ -75,10 +74,14 @@ fun IOSSwitch(
             },
         contentAlignment = Alignment.CenterStart
     ) {
+        val density = androidx.compose.ui.platform.LocalDensity.current
         Box(
             modifier = Modifier
                 .padding(padding)
-                .offset(x = thumbOffset)
+                .graphicsLayer {
+                    // Use graphicsLayer instead of offset() to avoid relayout each frame
+                    translationX = with(density) { maxOffset.toPx() } * animatedProgress
+                }
                 .size(thumbSize)
                 .shadow(
                     elevation = 4.dp, // Soft shadow for depth

@@ -29,6 +29,17 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
  * @param ambientColor Shadow ambient color
  * @param spotColor Shadow spot color
  */
+// Static top highlight brush — never changes, cached once
+private val topHighlightBrush = Brush.verticalGradient(
+    colors = listOf(
+        Color.White.copy(alpha = 0.22f),
+        Color.White.copy(alpha = 0.03f),
+        Color.Transparent,
+    ),
+    startY = 0f,
+    endY = 80f
+)
+
 @Composable
 fun Modifier.doubleBezelCard(
     shape: Shape,
@@ -38,16 +49,6 @@ fun Modifier.doubleBezelCard(
     ambientColor: Color = MiuixTheme.colorScheme.primary.copy(alpha = 0.18f),
     spotColor: Color = MiuixTheme.colorScheme.primary.copy(alpha = 0.12f),
 ): Modifier {
-    val topHighlightBrush = Brush.verticalGradient(
-        colors = listOf(
-            Color.White.copy(alpha = 0.22f),
-            Color.White.copy(alpha = 0.03f),
-            Color.Transparent,
-        ),
-        startY = 0f,
-        endY = 80f
-    )
-
     return this
         // Layer 1: Deep shadow
         .shadow(
