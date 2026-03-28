@@ -113,8 +113,7 @@ fun AboutScreenMiuix(
                 .let { if (enableBlur) it.hazeSource(state = hazeState) else it }
                 .padding(horizontal = 12.dp),
             contentPadding = innerPadding,
-            overscrollEffect = null,
-        ) {
+                    ) {
             item {
                 Column(
                     modifier = Modifier

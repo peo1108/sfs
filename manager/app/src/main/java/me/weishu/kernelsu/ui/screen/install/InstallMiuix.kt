@@ -117,8 +117,7 @@ internal fun InstallScreenMiuix(
                 .padding(top = 12.dp)
                 .padding(horizontal = 16.dp),
             contentPadding = innerPadding,
-            overscrollEffect = null,
-        ) {
+                    ) {
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),

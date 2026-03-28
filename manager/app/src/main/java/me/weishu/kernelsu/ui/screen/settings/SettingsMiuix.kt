@@ -128,8 +128,7 @@ fun SettingPagerMiuix(
                 .let { if (enableBlur) it.hazeSource(state = hazeState) else it }
                 .padding(horizontal = 16.dp), // iOS 26: wider inset margins
             contentPadding = innerPadding,
-            overscrollEffect = null,
-        ) {
+                    ) {
             item {
                 Card(
                     modifier = Modifier

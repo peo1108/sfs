@@ -248,8 +248,7 @@ fun AppProfileTemplateScreenMiuix(
                     .let { if (enableBlur) it.hazeSource(state = hazeState) else it }
                     .padding(horizontal = 12.dp),
                 contentPadding = innerPadding,
-                overscrollEffect = null
-            ) {
+                            ) {
                 item {
                     Spacer(Modifier.height(12.dp))
                 }

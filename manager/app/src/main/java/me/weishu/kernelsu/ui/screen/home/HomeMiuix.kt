@@ -122,8 +122,7 @@ fun HomePagerMiuix(
                 .padding(horizontal = 12.dp)
                 .let { if (enableBlur) it.hazeSource(state = hazeState) else it },
             contentPadding = innerPadding,
-            overscrollEffect = null,
-        ) {
+                    ) {
             item {
                 Column(
                     modifier = Modifier.padding(vertical = 12.dp),

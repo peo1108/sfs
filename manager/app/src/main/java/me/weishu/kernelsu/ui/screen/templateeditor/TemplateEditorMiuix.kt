@@ -107,8 +107,7 @@ fun TemplateEditorScreenMiuix(
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .let { if (enableBlur) it.hazeSource(state = hazeState) else it },
             contentPadding = innerPadding,
-            overscrollEffect = null
-        ) {
+                    ) {
             item {
                 Card(
                     modifier = Modifier

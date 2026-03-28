@@ -329,8 +329,7 @@ fun SuperUserPagerMiuix(
                             start = innerPadding.calculateStartPadding(layoutDirection),
                             end = innerPadding.calculateEndPadding(layoutDirection)
                         ),
-                        overscrollEffect = null,
-                    ) {
+                                            ) {
                         items(uiState.groupedApps, key = { it.uid }, contentType = { "group" }) { group ->
                             val expanded = expandedUids.value.contains(group.uid)
                             Column {

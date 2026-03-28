@@ -152,8 +152,7 @@ fun ColorPaletteScreenMiuix(
                 .let { if (enableBlurState) it.hazeSource(state = hazeState) else it }
                 .padding(horizontal = 12.dp),
             contentPadding = innerPadding,
-            overscrollEffect = null,
-        ) {
+                    ) {
             item {
                 Spacer(modifier = Modifier.height(32.dp))
                 ThemePreviewCardMiuix(

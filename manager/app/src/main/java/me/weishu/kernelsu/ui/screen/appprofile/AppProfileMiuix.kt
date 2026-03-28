@@ -144,8 +144,7 @@ fun AppProfileScreenMiuix(
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .let { if (enableBlur) it.hazeSource(state = hazeState) else it },
             contentPadding = innerPadding,
-            overscrollEffect = null
-        ) {
+                    ) {
             item {
                 AppProfileInner(
                     packageName = if (state.isUidGroup) "" else state.appGroup.primary.packageName,

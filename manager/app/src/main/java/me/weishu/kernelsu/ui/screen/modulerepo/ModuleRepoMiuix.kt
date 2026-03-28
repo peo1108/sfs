@@ -426,8 +426,7 @@ fun ModuleRepoScreenMiuix(
                             start = innerPadding.calculateStartPadding(layoutDirection),
                             end = innerPadding.calculateEndPadding(layoutDirection)
                         ),
-                        overscrollEffect = null,
-                    ) {
+                                            ) {
                         items(
                             items = displayModules,
                             key = { it.moduleId },
@@ -588,8 +587,7 @@ private fun ReadmePage(
             end = innerPadding.calculateEndPadding(layoutDirection),
             bottom = innerPadding.calculateBottomPadding(),
         ),
-        overscrollEffect = null,
-    ) {
+            ) {
         item {
             val contentReady = rememberContentReady()
             var isLoading by remember { mutableStateOf(true) }
@@ -657,8 +655,7 @@ fun ReleasesPage(
             end = innerPadding.calculateEndPadding(layoutDirection),
             bottom = innerPadding.calculateBottomPadding(),
         ),
-        overscrollEffect = null,
-    ) {
+            ) {
         if (detailReleases.isNotEmpty()) {
             item {
                 Spacer(Modifier.height(6.dp))
@@ -910,8 +907,7 @@ fun InfoPage(
             end = innerPadding.calculateEndPadding(layoutDirection),
             bottom = innerPadding.calculateBottomPadding(),
         ),
-        overscrollEffect = null,
-    ) {
+            ) {
         if (module.authorsList.isNotEmpty()) {
             item {
                 SmallTitle(

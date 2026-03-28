@@ -679,8 +679,7 @@ private fun ModuleList(
     LazyColumn(
         modifier = modifier.fillMaxHeight(),
         contentPadding = contentPadding,
-        overscrollEffect = null,
-    ) {
+            ) {
         items(
             items = modules,
             key = { it.id },
