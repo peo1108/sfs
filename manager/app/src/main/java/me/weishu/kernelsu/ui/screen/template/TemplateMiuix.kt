@@ -58,6 +58,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
+import me.weishu.kernelsu.ui.util.LocalGyroTilt
+import me.weishu.kernelsu.ui.util.rememberGyroGlowBrush
+import me.weishu.kernelsu.ui.util.rememberGyroRadialGlow
+import me.weishu.kernelsu.ui.util.doubleBezelCard
+import me.weishu.kernelsu.ui.util.pressScale
+import com.kyant.capsule.ContinuousRoundedRectangle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.chrisbanes.haze.HazeState
@@ -276,11 +282,29 @@ private fun TemplateItem(
     template: TemplateInfo,
     onClick: () -> Unit,
 ) {
+    val miniCardShape = ContinuousRoundedRectangle(16.dp)
+    val tiltValue = LocalGyroTilt.current
+    val miniGlowBrush = rememberGyroGlowBrush(
+        primaryColor = Color.White,
+        accentColor = colorScheme.primary,
+        tilt = tiltValue
+    )
+    val radialGlow = rememberGyroRadialGlow(tilt = tiltValue)
+
     Card(
-        modifier = Modifier.padding(bottom = 12.dp),
+        modifier = Modifier
+            .padding(bottom = 12.dp)
+            .fillMaxWidth()
+            .pressScale()
+            .doubleBezelCard(
+                shape = miniCardShape,
+                glowBrush = miniGlowBrush,
+                radialGlow = radialGlow,
+            ),
         onClick = onClick,
         showIndication = true,
-        pressFeedbackType = PressFeedbackType.Sink
+        pressFeedbackType = PressFeedbackType.Sink,
+        colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f))
     ) {
         Column(
             modifier = Modifier

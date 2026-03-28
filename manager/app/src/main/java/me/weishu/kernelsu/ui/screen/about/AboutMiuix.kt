@@ -43,6 +43,11 @@ import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.util.defaultHazeEffect
+import me.weishu.kernelsu.ui.util.LocalGyroTilt
+import me.weishu.kernelsu.ui.util.rememberGyroGlowBrush
+import me.weishu.kernelsu.ui.util.rememberGyroRadialGlow
+import me.weishu.kernelsu.ui.util.doubleBezelCard
+import me.weishu.kernelsu.ui.util.pressScale
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -105,6 +110,15 @@ fun AboutScreenMiuix(
         popupHost = { },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
+        val miniCardShape = ContinuousRoundedRectangle(16.dp)
+        val tiltValue = LocalGyroTilt.current
+        val miniGlowBrush = rememberGyroGlowBrush(
+            primaryColor = Color.White,
+            accentColor = colorScheme.primary,
+            tilt = tiltValue
+        )
+        val radialGlow = rememberGyroRadialGlow(tilt = tiltValue)
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxHeight()
@@ -149,7 +163,16 @@ fun AboutScreenMiuix(
             }
             item {
                 Card(
-                    modifier = Modifier.padding(bottom = 12.dp)
+                    modifier = Modifier
+                        .padding(bottom = 12.dp)
+                        .fillMaxWidth()
+                        .pressScale()
+                        .doubleBezelCard(
+                            shape = miniCardShape,
+                            glowBrush = miniGlowBrush,
+                            radialGlow = radialGlow,
+                        ),
+                    colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f))
                 ) {
                     state.links.forEach {
                         SuperArrow(

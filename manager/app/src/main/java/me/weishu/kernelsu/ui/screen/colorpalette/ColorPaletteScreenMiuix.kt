@@ -70,6 +70,11 @@ import me.weishu.kernelsu.ui.component.miuix.ScaleDialog
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.keyColorOptions
 import me.weishu.kernelsu.ui.util.defaultHazeEffect
+import me.weishu.kernelsu.ui.util.LocalGyroTilt
+import me.weishu.kernelsu.ui.util.rememberGyroGlowBrush
+import me.weishu.kernelsu.ui.util.rememberGyroRadialGlow
+import me.weishu.kernelsu.ui.util.doubleBezelCard
+import me.weishu.kernelsu.ui.util.pressScale
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -144,6 +149,15 @@ fun ColorPaletteScreenMiuix(
     ) { innerPadding ->
         val showScaleDialog = rememberSaveable { mutableStateOf(false) }
 
+        val miniCardShape = ContinuousRoundedRectangle(16.dp)
+        val tiltValue = LocalGyroTilt.current
+        val miniGlowBrush = rememberGyroGlowBrush(
+            primaryColor = Color.White,
+            accentColor = colorScheme.primary,
+            tilt = tiltValue
+        )
+        val radialGlow = rememberGyroRadialGlow(tilt = tiltValue)
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxHeight()
@@ -183,7 +197,14 @@ fun ColorPaletteScreenMiuix(
                 Card(
                     modifier = Modifier
                         .padding(top = 12.dp)
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .pressScale()
+                        .doubleBezelCard(
+                            shape = miniCardShape,
+                            glowBrush = miniGlowBrush,
+                            radialGlow = radialGlow,
+                        ),
+                    colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f))
                 ) {
                     SuperSwitch(
                         title = stringResource(id = R.string.settings_monet),
@@ -289,7 +310,14 @@ fun ColorPaletteScreenMiuix(
                 Card(
                     modifier = Modifier
                         .padding(top = 12.dp)
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .pressScale()
+                        .doubleBezelCard(
+                            shape = miniCardShape,
+                            glowBrush = miniGlowBrush,
+                            radialGlow = radialGlow,
+                        ),
+                    colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f))
                 ) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         SuperSwitch(
@@ -348,7 +376,14 @@ fun ColorPaletteScreenMiuix(
                 Card(
                     modifier = Modifier
                         .padding(top = 12.dp)
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .pressScale()
+                        .doubleBezelCard(
+                            shape = miniCardShape,
+                            glowBrush = miniGlowBrush,
+                            radialGlow = radialGlow,
+                        ),
+                    colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f))
                 ) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                         SuperSwitch(
