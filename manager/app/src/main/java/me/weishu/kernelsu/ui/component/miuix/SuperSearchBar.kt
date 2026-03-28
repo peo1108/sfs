@@ -369,7 +369,7 @@ fun SearchBarFake(
             )
         },
         modifier = Modifier
-            .background(colorScheme.surfaceContainerHigh.copy(alpha = 0.35f), shape = androidx.compose.foundation.shape.RoundedCornerShape(25.dp))
+            .background(colorScheme.surfaceContainerHigh.copy(alpha = 0.01f), shape = androidx.compose.foundation.shape.RoundedCornerShape(25.dp))
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .padding(
