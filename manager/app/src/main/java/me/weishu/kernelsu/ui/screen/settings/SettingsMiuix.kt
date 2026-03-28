@@ -35,7 +35,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.Column
 
 
-import androidx.compose.ui.graphics.Brush
+
+
 import androidx.compose.ui.graphics.Color
 import me.weishu.kernelsu.ui.util.rememberGyroGlowBrush
 import me.weishu.kernelsu.ui.util.rememberGyroRadialGlow
