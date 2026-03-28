@@ -200,6 +200,8 @@ fun SuperUserPagerMiuix(
             }
             searchStatus.SearchPager(
                 onSearchStatusChange = actions.onSearchStatusChange,
+                hazeState = hazeState,
+                hazeStyle = hazeStyle,
                 defaultResult = {},
                 searchBarTopPadding = dynamicTopPadding,
             ) {
