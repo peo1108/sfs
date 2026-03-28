@@ -57,7 +57,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
@@ -185,37 +185,37 @@ class MainActivity : ComponentActivity() {
                                     transitionSpec = {
                                         (slideInHorizontally(
                                             initialOffsetX = { fullWidth -> fullWidth },
-                                            animationSpec = tween(350)
-                                        ) + fadeIn(animationSpec = tween(350)))
+                                            animationSpec = spring(dampingRatio = 0.8f, stiffness = 350f)
+                                        ) + fadeIn(animationSpec = spring(stiffness = 500f)))
                                             .togetherWith(
                                                 slideOutHorizontally(
                                                     targetOffsetX = { fullWidth -> -fullWidth / 3 },
-                                                    animationSpec = tween(350)
-                                                ) + fadeOut(animationSpec = tween(150))
+                                                    animationSpec = spring(dampingRatio = 0.8f, stiffness = 350f)
+                                                ) + fadeOut(animationSpec = spring(stiffness = 800f))
                                             )
                                     },
                                     popTransitionSpec = {
                                         (slideInHorizontally(
                                             initialOffsetX = { fullWidth -> -fullWidth / 3 },
-                                            animationSpec = tween(350)
-                                        ) + fadeIn(animationSpec = tween(350)))
+                                            animationSpec = spring(dampingRatio = 0.8f, stiffness = 350f)
+                                        ) + fadeIn(animationSpec = spring(stiffness = 500f)))
                                             .togetherWith(
                                                 slideOutHorizontally(
                                                     targetOffsetX = { fullWidth -> fullWidth },
-                                                    animationSpec = tween(350)
-                                                ) + fadeOut(animationSpec = tween(150))
+                                                    animationSpec = spring(dampingRatio = 0.8f, stiffness = 350f)
+                                                ) + fadeOut(animationSpec = spring(stiffness = 800f))
                                             )
                                     },
                                     predictivePopTransitionSpec = {
                                         (slideInHorizontally(
                                             initialOffsetX = { fullWidth -> -fullWidth / 3 },
-                                            animationSpec = tween(350)
-                                        ) + fadeIn(animationSpec = tween(350)))
+                                            animationSpec = spring(dampingRatio = 0.8f, stiffness = 350f)
+                                        ) + fadeIn(animationSpec = spring(stiffness = 500f)))
                                             .togetherWith(
                                                 slideOutHorizontally(
                                                     targetOffsetX = { fullWidth -> fullWidth },
-                                                    animationSpec = tween(350)
-                                                ) + fadeOut(animationSpec = tween(150))
+                                                    animationSpec = spring(dampingRatio = 0.8f, stiffness = 350f)
+                                                ) + fadeOut(animationSpec = spring(stiffness = 800f))
                                             )
                                     },
                                     onBack = {

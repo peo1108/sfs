@@ -144,6 +144,7 @@ fun FlashEffect(
         if (!enabled || text.isNotEmpty()) {
             return@LaunchedEffect
         }
+        me.weishu.kernelsu.ui.component.DynamicIslandManager.show("⚡ Flashing in progress...")
         var currentText = text
         val mainHandler = Handler(Looper.getMainLooper())
         withContext(Dispatchers.IO) {
@@ -175,7 +176,13 @@ fun FlashEffect(
                     }
                 }
                 mainHandler.post {
-                    onFlashingStatusChange(if (code == 0) FlashingStatus.SUCCESS else FlashingStatus.FAILED)
+                    val status = if (code == 0) FlashingStatus.SUCCESS else FlashingStatus.FAILED
+                    onFlashingStatusChange(status)
+                    if (code == 0) {
+                        me.weishu.kernelsu.ui.component.DynamicIslandManager.show("✅ Flash successful! Reboot to apply.")
+                    } else {
+                        me.weishu.kernelsu.ui.component.DynamicIslandManager.show("❌ Flash failed (code: $code)")
+                    }
                 }
             }
         }
