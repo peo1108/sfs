@@ -62,6 +62,10 @@ import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.defaultHazeEffect
 import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
+import me.weishu.kernelsu.ui.util.rememberGyroGlowBrush
+import me.weishu.kernelsu.ui.util.rememberGyroRadialGlow
+import me.weishu.kernelsu.ui.util.doubleBezelCard
+import me.weishu.kernelsu.ui.util.pressScale
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
@@ -531,7 +535,12 @@ private fun LearnMoreCard(
     onOpenUrl: (String) -> Unit,
 ) {
     val url = stringResource(R.string.home_learn_kernelsu_url)
-    Card(modifier = Modifier.fillMaxWidth()) {
+    val cardShape = ContinuousRoundedRectangle(16.dp)
+    val tiltValue = me.weishu.kernelsu.ui.util.LocalGyroTilt.current
+    val glowBrush = rememberGyroGlowBrush(tilt = tiltValue)
+    val radialGlow = rememberGyroRadialGlow(tilt = tiltValue)
+    Card(modifier = Modifier.fillMaxWidth().pressScale().doubleBezelCard(shape = cardShape, glowBrush = glowBrush, radialGlow = radialGlow),
+        colors = CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f))) {
         BasicComponent(
             title = stringResource(R.string.home_learn_kernelsu),
             summary = stringResource(R.string.home_click_to_learn_kernelsu),
@@ -549,7 +558,12 @@ private fun LearnMoreCard(
 
 @Composable
 private fun DonateCard(onOpenUrl: (String) -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    val cardShape = ContinuousRoundedRectangle(16.dp)
+    val tiltValue = me.weishu.kernelsu.ui.util.LocalGyroTilt.current
+    val glowBrush = rememberGyroGlowBrush(tilt = tiltValue)
+    val radialGlow = rememberGyroRadialGlow(tilt = tiltValue)
+    Card(modifier = Modifier.fillMaxWidth().pressScale().doubleBezelCard(shape = cardShape, glowBrush = glowBrush, radialGlow = radialGlow),
+        colors = CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f))) {
         BasicComponent(
             title = stringResource(R.string.home_support_title),
             summary = stringResource(R.string.home_support_content),
@@ -588,7 +602,13 @@ private fun InfoCard(systemInfo: SystemInfo) {
         )
     }
 
-    Card {
+    val cardShape = ContinuousRoundedRectangle(16.dp)
+    val tiltValue = me.weishu.kernelsu.ui.util.LocalGyroTilt.current
+    val glowBrush = rememberGyroGlowBrush(tilt = tiltValue)
+    val radialGlow = rememberGyroRadialGlow(tilt = tiltValue)
+
+    Card(modifier = Modifier.pressScale().doubleBezelCard(shape = cardShape, glowBrush = glowBrush, radialGlow = radialGlow),
+        colors = CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f))) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
