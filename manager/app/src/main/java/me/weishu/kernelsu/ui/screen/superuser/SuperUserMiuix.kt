@@ -80,6 +80,7 @@ import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.rememberGyroTilt
 import me.weishu.kernelsu.ui.util.rememberGyroGlowBrush
+import me.weishu.kernelsu.ui.util.doubleBezelCard
 import me.weishu.kernelsu.ui.util.ownerNameForUid
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
@@ -511,17 +512,9 @@ private fun GroupItem(
                 scaleX = 0.9f + 0.1f * animatedProgress.value
                 scaleY = 0.9f + 0.1f * animatedProgress.value
             }
-            .shadow(
-                elevation = 6.dp,
+            .doubleBezelCard(
                 shape = miniCardShape,
-                ambientColor = colorScheme.primary.copy(alpha = 0.15f),
-                spotColor = colorScheme.primary.copy(alpha = 0.10f)
-            )
-            .clip(miniCardShape)
-            .border(
-                width = 0.5.dp,
-                brush = miniGlowBrush,
-                shape = miniCardShape
+                glowBrush = miniGlowBrush,
             ),
         colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)),
         onClick = onClickPrimary,

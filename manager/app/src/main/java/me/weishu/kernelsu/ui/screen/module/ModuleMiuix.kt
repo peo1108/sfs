@@ -115,6 +115,7 @@ import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.getFileName
 import me.weishu.kernelsu.ui.util.rememberGyroTilt
 import me.weishu.kernelsu.ui.util.rememberGyroGlowBrush
+import me.weishu.kernelsu.ui.util.doubleBezelCard
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.DropdownImpl
@@ -765,17 +766,9 @@ fun ModuleItem(
         modifier = Modifier
             .padding(horizontal = 12.dp)
             .padding(bottom = 12.dp)
-            .shadow(
-                elevation = 6.dp,
+            .doubleBezelCard(
                 shape = miniCardShape,
-                ambientColor = colorScheme.primary.copy(alpha = 0.15f),
-                spotColor = colorScheme.primary.copy(alpha = 0.10f)
-            )
-            .clip(miniCardShape)
-            .border(
-                width = 0.5.dp,
-                brush = miniGlowBrush,
-                shape = miniCardShape
+                glowBrush = miniGlowBrush,
             ),
         colors = CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)),
         insideMargin = PaddingValues(16.dp),
