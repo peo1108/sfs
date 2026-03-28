@@ -58,7 +58,7 @@ data class SearchStatus(
                         if (hazeState != null && hazeStyle != null) {
                             Modifier.defaultHazeEffect(hazeState, hazeStyle)
                         } else {
-                            Modifier.background(colorScheme.surface)
+                            Modifier.background(colorScheme.surface.copy(alpha = 0.01f))
                         }
                     )
             )
