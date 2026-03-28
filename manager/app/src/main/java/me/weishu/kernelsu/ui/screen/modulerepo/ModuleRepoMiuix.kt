@@ -52,6 +52,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.foundation.border
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import top.yukonga.miuix.kmp.basic.CardDefaults
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -230,11 +234,33 @@ fun ModuleRepoScreenMiuix(
                         Spacer(Modifier.height(6.dp))
                     }
                     items(displaySearch, key = { it.moduleId }, contentType = { "module" }) { module ->
+                        val miniCardShape = ContinuousRoundedRectangle(16.dp)
+                        val miniGlowBrush = Brush.linearGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = 0.25f),
+                                colorScheme.primary.copy(alpha = 0.10f),
+                                Color.White.copy(alpha = 0.08f),
+                            )
+                        )
+
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 12.dp)
-                                .padding(bottom = 12.dp),
+                                .padding(bottom = 12.dp)
+                                .shadow(
+                                    elevation = 6.dp,
+                                    shape = miniCardShape,
+                                    ambientColor = colorScheme.primary.copy(alpha = 0.15f),
+                                    spotColor = colorScheme.primary.copy(alpha = 0.10f)
+                                )
+                                .clip(miniCardShape)
+                                .border(
+                                    width = 0.5.dp,
+                                    brush = miniGlowBrush,
+                                    shape = miniCardShape
+                                ),
+                            colors = CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)),
                             insideMargin = PaddingValues(16.dp),
                             showIndication = true,
                             pressFeedbackType = PressFeedbackType.Sink,
@@ -409,11 +435,33 @@ fun ModuleRepoScreenMiuix(
                         ) { module ->
                             val moduleAuthor = stringResource(id = R.string.module_author)
 
+                            val miniCardShape = ContinuousRoundedRectangle(16.dp)
+                            val miniGlowBrush = Brush.linearGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = 0.25f),
+                                    colorScheme.primary.copy(alpha = 0.10f),
+                                    Color.White.copy(alpha = 0.08f),
+                                )
+                            )
+
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 12.dp)
-                                    .padding(bottom = 12.dp),
+                                    .padding(bottom = 12.dp)
+                                    .shadow(
+                                        elevation = 6.dp,
+                                        shape = miniCardShape,
+                                        ambientColor = colorScheme.primary.copy(alpha = 0.15f),
+                                        spotColor = colorScheme.primary.copy(alpha = 0.10f)
+                                    )
+                                    .clip(miniCardShape)
+                                    .border(
+                                        width = 0.5.dp,
+                                        brush = miniGlowBrush,
+                                        shape = miniCardShape
+                                    ),
+                                colors = CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)),
                                 insideMargin = PaddingValues(16.dp),
                                 showIndication = true,
                                 onClick = { actions.onOpenRepoDetail(module) }

@@ -31,6 +31,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
@@ -56,6 +61,7 @@ import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.extra.SuperSwitch
+import me.weishu.kernelsu.ui.component.IOSSuperSwitch
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
@@ -75,8 +81,9 @@ fun SettingPagerMiuix(
     val hazeState = remember { HazeState() }
     val hazeStyle = if (enableBlur) {
         HazeStyle(
-            backgroundColor = colorScheme.surface,
-            tint = HazeTint(colorScheme.surface.copy(0.8f))
+            backgroundColor = Color.Transparent,
+            tint = HazeTint(colorScheme.surface.copy(0.05f)),
+            blurRadius = 25.dp // iOS 26: deep blur
         )
     } else {
         HazeStyle.Unspecified
@@ -86,6 +93,7 @@ fun SettingPagerMiuix(
     val showSendLogDialog = rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
+        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 modifier = if (enableBlur) {
@@ -93,7 +101,7 @@ fun SettingPagerMiuix(
                 } else {
                     Modifier
                 },
-                color = if (enableBlur) Color.Transparent else colorScheme.surface,
+                color = Color.Transparent,
                 title = stringResource(R.string.settings),
                 scrollBehavior = scrollBehavior
             )
@@ -101,6 +109,16 @@ fun SettingPagerMiuix(
         popupHost = { },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
+        // iOS 26: Settings Card glow border
+        val miniCardShape = com.kyant.capsule.ContinuousRoundedRectangle(16.dp)
+        val miniGlowBrush = Brush.linearGradient(
+            colors = listOf(
+                Color.White.copy(alpha = 0.25f),
+                colorScheme.primary.copy(alpha = 0.10f),
+                Color.White.copy(alpha = 0.08f),
+            )
+        )
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxHeight()
@@ -108,52 +126,79 @@ fun SettingPagerMiuix(
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .let { if (enableBlur) it.hazeSource(state = hazeState) else it }
-                .padding(horizontal = 12.dp),
+                .padding(horizontal = 16.dp), // iOS 26: wider inset margins
             contentPadding = innerPadding,
             overscrollEffect = null,
         ) {
             item {
                 Card(
                     modifier = Modifier
-                        .padding(top = 12.dp)
-                        .fillMaxWidth(),
+                        .padding(top = 16.dp) // iOS 26: more spacing between groups
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 6.dp,
+                            shape = miniCardShape,
+                            ambientColor = colorScheme.primary.copy(alpha = 0.15f),
+                            spotColor = colorScheme.primary.copy(alpha = 0.10f)
+                        )
+                        .clip(miniCardShape)
+                        .border(
+                            width = 0.5.dp,
+                            brush = miniGlowBrush,
+                            shape = miniCardShape
+                        ),
+                    colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)) // iOS 26
                 ) {
-                    SuperSwitch(
-                        title = stringResource(id = R.string.settings_check_update),
-                        summary = stringResource(id = R.string.settings_check_update_summary),
-                        startAction = {
-                            Icon(
-                                Icons.Rounded.Update,
-                                modifier = Modifier.padding(end = 6.dp),
-                                contentDescription = stringResource(id = R.string.settings_check_update),
-                                tint = colorScheme.onBackground
-                            )
-                        },
-                        checked = uiState.checkUpdate,
-                        onCheckedChange = actions.onSetCheckUpdate
-                    )
-                    KsuIsValid {
-                        SuperSwitch(
-                            title = stringResource(id = R.string.settings_module_check_update),
+                    Column {
+                        IOSSuperSwitch(
+                            title = stringResource(id = R.string.settings_check_update),
                             summary = stringResource(id = R.string.settings_check_update_summary),
                             startAction = {
                                 Icon(
-                                    Icons.Rounded.UploadFile,
+                                    Icons.Rounded.Update,
                                     modifier = Modifier.padding(end = 6.dp),
                                     contentDescription = stringResource(id = R.string.settings_check_update),
                                     tint = colorScheme.onBackground
                                 )
                             },
-                            checked = uiState.checkModuleUpdate,
-                            onCheckedChange = actions.onSetCheckModuleUpdate
+                            checked = uiState.checkUpdate,
+                            onCheckedChange = actions.onSetCheckUpdate
                         )
+                        KsuIsValid {
+                            IOSSuperSwitch(
+                                title = stringResource(id = R.string.settings_module_check_update),
+                                summary = stringResource(id = R.string.settings_check_update_summary),
+                                startAction = {
+                                    Icon(
+                                        Icons.Rounded.UploadFile,
+                                        modifier = Modifier.padding(end = 6.dp),
+                                        contentDescription = stringResource(id = R.string.settings_check_update),
+                                        tint = colorScheme.onBackground
+                                    )
+                                },
+                                checked = uiState.checkModuleUpdate,
+                                onCheckedChange = actions.onSetCheckModuleUpdate
+                            )
+                        }
                     }
                 }
 
-                Card(
+                Card(colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)), // iOS 26
                     modifier = Modifier
-                        .padding(top = 12.dp)
-                        .fillMaxWidth(),
+                        .padding(top = 16.dp) // iOS 26: more spacing
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 6.dp,
+                            shape = miniCardShape,
+                            ambientColor = colorScheme.primary.copy(alpha = 0.15f),
+                            spotColor = colorScheme.primary.copy(alpha = 0.10f)
+                        )
+                        .clip(miniCardShape)
+                        .border(
+                            width = 0.5.dp,
+                            brush = miniGlowBrush,
+                            shape = miniCardShape
+                        ),
                 ) {
                     SuperDropdown(
                         title = stringResource(id = R.string.settings_ui_mode),
@@ -186,10 +231,22 @@ fun SettingPagerMiuix(
                 }
 
                 KsuIsValid {
-                    Card(
+                    Card(colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)), // iOS 26
                         modifier = Modifier
-                            .padding(top = 12.dp)
-                            .fillMaxWidth(),
+                            .padding(top = 16.dp) // iOS 26
+                            .fillMaxWidth()
+                            .shadow(
+                                elevation = 6.dp,
+                                shape = miniCardShape,
+                                ambientColor = colorScheme.primary.copy(alpha = 0.15f),
+                                spotColor = colorScheme.primary.copy(alpha = 0.10f)
+                            )
+                            .clip(miniCardShape)
+                            .border(
+                                width = 0.5.dp,
+                                brush = miniGlowBrush,
+                                shape = miniCardShape
+                            ),
                     ) {
                         val profileTemplate = stringResource(id = R.string.settings_profile_template)
                         SuperArrow(
@@ -209,10 +266,22 @@ fun SettingPagerMiuix(
                 }
 
                 KsuIsValid {
-                    Card(
+                    Card(colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)), // iOS 26
                         modifier = Modifier
-                            .padding(top = 12.dp)
-                            .fillMaxWidth(),
+                            .padding(top = 16.dp) // iOS 26
+                            .fillMaxWidth()
+                            .shadow(
+                                elevation = 6.dp,
+                                shape = miniCardShape,
+                                ambientColor = colorScheme.primary.copy(alpha = 0.15f),
+                                spotColor = colorScheme.primary.copy(alpha = 0.10f)
+                            )
+                            .clip(miniCardShape)
+                            .border(
+                                width = 0.5.dp,
+                                brush = miniGlowBrush,
+                                shape = miniCardShape
+                            ),
                     ) {
                         val suCompatModeItems = listOf(
                             stringResource(id = R.string.settings_mode_enable_by_default),
@@ -247,7 +316,7 @@ fun SettingPagerMiuix(
                             "managed" -> stringResource(id = R.string.feature_status_managed_summary)
                             else -> stringResource(id = R.string.settings_kernel_umount_summary)
                         }
-                        SuperSwitch(
+                        IOSSuperSwitch(
                             title = stringResource(id = R.string.settings_kernel_umount),
                             summary = umountSummary,
                             startAction = {
@@ -263,7 +332,7 @@ fun SettingPagerMiuix(
                             onCheckedChange = actions.onSetKernelUmountEnabled
                         )
 
-                        SuperSwitch(
+                        IOSSuperSwitch(
                             title = stringResource(id = R.string.settings_umount_modules_default),
                             summary = stringResource(id = R.string.settings_umount_modules_default_summary),
                             startAction = {
@@ -278,7 +347,7 @@ fun SettingPagerMiuix(
                             onCheckedChange = actions.onSetDefaultUmountModules
                         )
 
-                        SuperSwitch(
+                        IOSSuperSwitch(
                             title = stringResource(id = R.string.enable_web_debugging),
                             summary = stringResource(id = R.string.enable_web_debugging_summary),
                             startAction = {
@@ -292,7 +361,7 @@ fun SettingPagerMiuix(
                             checked = uiState.enableWebDebugging,
                             onCheckedChange = actions.onSetEnableWebDebugging
                         )
-                        SuperSwitch(
+                        IOSSuperSwitch(
                             title = stringResource(id = R.string.settings_auto_jailbreak),
                             summary = stringResource(id = R.string.settings_auto_jailbreak_summary),
                             startAction = {
@@ -311,10 +380,22 @@ fun SettingPagerMiuix(
                 }
 
                 if (uiState.isLkmMode) {
-                    Card(
+                    Card(colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)), // iOS 26
                         modifier = Modifier
-                            .padding(top = 12.dp)
-                            .fillMaxWidth(),
+                            .padding(top = 16.dp) // iOS 26
+                            .fillMaxWidth()
+                            .shadow(
+                                elevation = 6.dp,
+                                shape = miniCardShape,
+                                ambientColor = colorScheme.primary.copy(alpha = 0.15f),
+                                spotColor = colorScheme.primary.copy(alpha = 0.10f)
+                            )
+                            .clip(miniCardShape)
+                            .border(
+                                width = 0.5.dp,
+                                brush = miniGlowBrush,
+                                shape = miniCardShape
+                            ),
                     ) {
                         val uninstall = stringResource(id = R.string.settings_uninstall)
                         SuperArrow(
@@ -339,8 +420,21 @@ fun SettingPagerMiuix(
 
                 Card(
                     modifier = Modifier
-                        .padding(vertical = 12.dp)
-                        .fillMaxWidth(),
+                        .padding(vertical = 16.dp) // iOS 26: more spacing
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 6.dp,
+                            shape = miniCardShape,
+                            ambientColor = colorScheme.primary.copy(alpha = 0.15f),
+                            spotColor = colorScheme.primary.copy(alpha = 0.10f)
+                        )
+                        .clip(miniCardShape)
+                        .border(
+                            width = 0.5.dp,
+                            brush = miniGlowBrush,
+                            shape = miniCardShape
+                        ),
+                    colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)) // iOS 26
                 ) {
                     SuperArrow(
                         title = stringResource(id = R.string.send_log),

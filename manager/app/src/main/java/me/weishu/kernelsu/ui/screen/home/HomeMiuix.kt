@@ -35,6 +35,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import com.kyant.capsule.ContinuousRoundedRectangle
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
@@ -242,6 +248,16 @@ private fun StatusCard(
                 }
                 val workingText = "${stringResource(id = R.string.home_working)}$workingMode$workingState"
 
+                val greenGlassShape = RoundedCornerShape(20.dp)
+                val greenGlowColor = if (isDynamicColor) colorScheme.primary else Color(0xFF34C759)
+                val greenGlassBorder = Brush.linearGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.35f),
+                        greenGlowColor.copy(alpha = 0.15f),
+                        Color.White.copy(alpha = 0.1f),
+                    )
+                )
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -252,13 +268,21 @@ private fun StatusCard(
                     Card(
                         modifier = Modifier
                             .weight(1f)
-                            .fillMaxHeight(),
+                            .fillMaxHeight()
+                            .shadow(
+                                elevation = 8.dp,
+                                shape = greenGlassShape,
+                                ambientColor = greenGlowColor.copy(alpha = 0.3f),
+                                spotColor = greenGlowColor.copy(alpha = 0.15f)
+                            )
+                            .clip(greenGlassShape)
+                            .border(
+                                width = 0.5.dp,
+                                brush = greenGlassBorder,
+                                shape = greenGlassShape
+                            ),
                         colors = CardDefaults.defaultColors(
-                            color = when {
-                                isDynamicColor -> colorScheme.secondaryContainer
-                                isInDarkTheme() -> Color(0xFF1A3825)
-                                else -> Color(0xFFDFFAE4)
-                            }
+                            color = greenGlowColor.copy(alpha = if (isDynamicColor) 0.15f else 0.1f)
                         ),
                         onClick = {
                             if (!state.isLateLoadMode) {
@@ -312,10 +336,32 @@ private fun StatusCard(
                             .weight(1f)
                             .fillMaxHeight()
                     ) {
+                        val miniCardShape = ContinuousRoundedRectangle(16.dp)
+                        val miniGlowBrush = Brush.linearGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = 0.25f),
+                                colorScheme.primary.copy(alpha = 0.10f),
+                                Color.White.copy(alpha = 0.08f),
+                            )
+                        )
+
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .weight(1f),
+                                .weight(1f)
+                                .shadow(
+                                    elevation = 6.dp,
+                                    shape = miniCardShape,
+                                    ambientColor = colorScheme.primary.copy(alpha = 0.15f),
+                                    spotColor = colorScheme.primary.copy(alpha = 0.10f)
+                                )
+                                .clip(miniCardShape)
+                                .border(
+                                    width = 0.5.dp,
+                                    brush = miniGlowBrush,
+                                    shape = miniCardShape
+                                ),
+                            colors = CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)),
                             insideMargin = PaddingValues(16.dp),
                             onClick = { actions.onSuperuserClick() },
                             showIndication = true,
@@ -342,7 +388,20 @@ private fun StatusCard(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .weight(1f),
+                                .weight(1f)
+                                .shadow(
+                                    elevation = 6.dp,
+                                    shape = miniCardShape,
+                                    ambientColor = colorScheme.primary.copy(alpha = 0.15f),
+                                    spotColor = colorScheme.primary.copy(alpha = 0.10f)
+                                )
+                                .clip(miniCardShape)
+                                .border(
+                                    width = 0.5.dp,
+                                    brush = miniGlowBrush,
+                                    shape = miniCardShape
+                                ),
+                            colors = CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)),
                             insideMargin = PaddingValues(16.dp),
                             onClick = { actions.onModuleClick() },
                             showIndication = true,

@@ -101,13 +101,15 @@ fun AppProfileScreenMiuix(
     val hazeState = remember { HazeState() }
     val hazeStyle = if (enableBlur) {
         HazeStyle(
-            backgroundColor = colorScheme.surface,
-            tint = HazeTint(colorScheme.surface.copy(0.8f))
+            backgroundColor = Color.Transparent,
+            tint = HazeTint(colorScheme.surface.copy(0.05f)),
+            blurRadius = 25.dp
         )
     } else {
         HazeStyle.Unspecified
     }
     Scaffold(
+        containerColor = Color.Transparent,
         topBar = {
             TopBar(
                 onBack = actions.onBack,
@@ -198,9 +200,10 @@ private fun AppProfileInner(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp)
+                .padding(horizontal = 16.dp)
                 .padding(bottom = 12.dp),
-            insideMargin = PaddingValues(start = 12.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)
+            colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.2f)),
+            insideMargin = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -296,8 +299,9 @@ private fun AppProfileInner(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp)
+                .padding(horizontal = 16.dp)
                 .padding(bottom = 12.dp),
+            colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.2f))
         ) {
             SuperSwitch(
                 startAction = {
@@ -382,8 +386,9 @@ private fun AppProfileInner(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp)
+                    .padding(horizontal = 16.dp)
                     .padding(bottom = if (rootMode != Mode.Default) 12.dp else 0.dp),
+                colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.2f))
             ) {
                 AnimatedVisibility(
                     visible = rootMode == Mode.Template,
@@ -419,8 +424,9 @@ private fun AppProfileInner(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp)
+                    .padding(horizontal = 16.dp)
                     .padding(bottom = if (nonRootMode != Mode.Default) 12.dp else 0.dp),
+                colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.2f))
             ) {
                 AnimatedVisibility(
                     visible = nonRootMode == Mode.Custom,
@@ -445,8 +451,9 @@ private fun AppProfileInner(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp)
+                    .padding(horizontal = 16.dp)
                     .padding(bottom = 12.dp),
+                colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.2f))
             ) {
                 Spacer(Modifier.height(3.dp))
                 affectedApps.forEach { app ->

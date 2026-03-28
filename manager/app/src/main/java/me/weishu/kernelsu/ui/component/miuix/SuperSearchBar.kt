@@ -317,7 +317,7 @@ fun SearchBar(
         },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp)
+            .padding(horizontal = 16.dp)
             .padding(top = searchBarTopPadding, bottom = 6.dp)
             .focusRequester(focusRequester),
         onSearch = { },
@@ -363,7 +363,7 @@ fun SearchBarFake(
         modifier = Modifier
             .let { if (!enableBlur) it.background(colorScheme.surface) else it }
             .fillMaxWidth()
-            .padding(horizontal = 12.dp)
+            .padding(horizontal = 16.dp)
             .padding(
                 start = innerPadding.calculateStartPadding(layoutDirection),
                 end = innerPadding.calculateEndPadding(layoutDirection)

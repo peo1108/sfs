@@ -71,6 +71,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.border
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import top.yukonga.miuix.kmp.basic.CardDefaults
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -742,10 +747,32 @@ fun ModuleItem(
     val hasDescription = module.description.isNotBlank()
     var expanded by rememberSaveable(module.id) { mutableStateOf(false) }
 
+    val miniCardShape = ContinuousRoundedRectangle(16.dp)
+    val miniGlowBrush = Brush.linearGradient(
+        colors = listOf(
+            Color.White.copy(alpha = 0.25f),
+            colorScheme.primary.copy(alpha = 0.10f),
+            Color.White.copy(alpha = 0.08f),
+        )
+    )
+
     Card(
         modifier = Modifier
             .padding(horizontal = 12.dp)
-            .padding(bottom = 12.dp),
+            .padding(bottom = 12.dp)
+            .shadow(
+                elevation = 6.dp,
+                shape = miniCardShape,
+                ambientColor = colorScheme.primary.copy(alpha = 0.15f),
+                spotColor = colorScheme.primary.copy(alpha = 0.10f)
+            )
+            .clip(miniCardShape)
+            .border(
+                width = 0.5.dp,
+                brush = miniGlowBrush,
+                shape = miniCardShape
+            ),
+        colors = CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)),
         insideMargin = PaddingValues(16.dp),
         onClick = {
             if (hasDescription) expanded = !expanded
