@@ -404,29 +404,23 @@ private fun SimpleAppItem(
                 .clip(ContinuousRoundedRectangle(16.dp))
                 .background(if (matched) colorScheme.primary else colorScheme.primaryContainer)
         )
-        // iOS 26: SimpleAppItem glow border
+        // iOS 26: SimpleAppItem glow border with gyro
         val miniCardShape = ContinuousRoundedRectangle(16.dp)
-        val miniGlowBrush = Brush.linearGradient(
-            colors = listOf(
-                Color.White.copy(alpha = 0.25f),
-                colorScheme.primary.copy(alpha = 0.10f),
-                Color.White.copy(alpha = 0.08f),
-            )
+        val tiltValue = me.weishu.kernelsu.ui.util.LocalGyroTilt.current
+        val miniGlowBrush = rememberGyroGlowBrush(
+            primaryColor = Color.White,
+            accentColor = colorScheme.primary,
+            tilt = tiltValue
         )
+        val radialGlow = rememberGyroRadialGlow(tilt = tiltValue)
         Card(
             modifier = Modifier
                 .padding(start = 6.dp, end = 12.dp, bottom = 6.dp)
-                .shadow(
-                    elevation = 6.dp,
+                .pressScale()
+                .doubleBezelCard(
                     shape = miniCardShape,
-                    ambientColor = colorScheme.primary.copy(alpha = 0.15f),
-                    spotColor = colorScheme.primary.copy(alpha = 0.10f)
-                )
-                .clip(miniCardShape)
-                .border(
-                    width = 0.5.dp,
-                    brush = miniGlowBrush,
-                    shape = miniCardShape
+                    glowBrush = miniGlowBrush,
+                    radialGlow = radialGlow,
                 ),
             colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f))
         ) {

@@ -182,19 +182,13 @@ fun SettingPagerMiuix(
 
                 Card(colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)), // iOS 26
                     modifier = Modifier
-                        .padding(top = 16.dp) // iOS 26: more spacing
+                        .padding(top = 16.dp)
                         .fillMaxWidth()
-                        .shadow(
-                            elevation = 6.dp,
+                        .pressScale()
+                        .doubleBezelCard(
                             shape = miniCardShape,
-                            ambientColor = colorScheme.primary.copy(alpha = 0.15f),
-                            spotColor = colorScheme.primary.copy(alpha = 0.10f)
-                        )
-                        .clip(miniCardShape)
-                        .border(
-                            width = 0.5.dp,
-                            brush = miniGlowBrush,
-                            shape = miniCardShape
+                            glowBrush = miniGlowBrush,
+                            radialGlow = radialGlow,
                         ),
                 ) {
                     SuperDropdown(
@@ -230,19 +224,13 @@ fun SettingPagerMiuix(
                 KsuIsValid {
                     Card(colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)), // iOS 26
                         modifier = Modifier
-                            .padding(top = 16.dp) // iOS 26
+                            .padding(top = 16.dp)
                             .fillMaxWidth()
-                            .shadow(
-                                elevation = 6.dp,
+                            .pressScale()
+                            .doubleBezelCard(
                                 shape = miniCardShape,
-                                ambientColor = colorScheme.primary.copy(alpha = 0.15f),
-                                spotColor = colorScheme.primary.copy(alpha = 0.10f)
-                            )
-                            .clip(miniCardShape)
-                            .border(
-                                width = 0.5.dp,
-                                brush = miniGlowBrush,
-                                shape = miniCardShape
+                                glowBrush = miniGlowBrush,
+                                radialGlow = radialGlow,
                             ),
                     ) {
                         val profileTemplate = stringResource(id = R.string.settings_profile_template)
@@ -417,21 +405,15 @@ fun SettingPagerMiuix(
 
                 Card(
                     modifier = Modifier
-                        .padding(vertical = 16.dp) // iOS 26: more spacing
+                        .padding(vertical = 16.dp)
                         .fillMaxWidth()
-                        .shadow(
-                            elevation = 6.dp,
+                        .pressScale()
+                        .doubleBezelCard(
                             shape = miniCardShape,
-                            ambientColor = colorScheme.primary.copy(alpha = 0.15f),
-                            spotColor = colorScheme.primary.copy(alpha = 0.10f)
-                        )
-                        .clip(miniCardShape)
-                        .border(
-                            width = 0.5.dp,
-                            brush = miniGlowBrush,
-                            shape = miniCardShape
+                            glowBrush = miniGlowBrush,
+                            radialGlow = radialGlow,
                         ),
-                    colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f)) // iOS 26
+                    colors = top.yukonga.miuix.kmp.basic.CardDefaults.defaultColors(color = colorScheme.surface.copy(alpha = 0.08f))
                 ) {
                     SuperArrow(
                         title = stringResource(id = R.string.send_log),
