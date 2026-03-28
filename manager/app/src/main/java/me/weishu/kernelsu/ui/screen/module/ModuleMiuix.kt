@@ -116,6 +116,7 @@ import me.weishu.kernelsu.ui.util.getFileName
 import me.weishu.kernelsu.ui.util.rememberGyroTilt
 import me.weishu.kernelsu.ui.util.rememberGyroGlowBrush
 import me.weishu.kernelsu.ui.util.doubleBezelCard
+import me.weishu.kernelsu.ui.util.pressScale
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.DropdownImpl
@@ -766,6 +767,7 @@ fun ModuleItem(
         modifier = Modifier
             .padding(horizontal = 12.dp)
             .padding(bottom = 12.dp)
+            .pressScale()
             .doubleBezelCard(
                 shape = miniCardShape,
                 glowBrush = miniGlowBrush,

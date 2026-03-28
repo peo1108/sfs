@@ -90,6 +90,7 @@ import me.weishu.kernelsu.ui.util.defaultHazeEffect
 import me.weishu.kernelsu.ui.util.rememberGyroTilt
 import me.weishu.kernelsu.ui.util.rememberGyroGlowBrush
 import me.weishu.kernelsu.ui.util.doubleBezelCard
+import me.weishu.kernelsu.ui.util.pressScale
 import me.weishu.kernelsu.ui.util.download
 import me.weishu.kernelsu.ui.util.rememberContentReady
 import top.yukonga.miuix.kmp.basic.Card
@@ -254,6 +255,7 @@ fun ModuleRepoScreenMiuix(
                                 .fillMaxWidth()
                                 .padding(horizontal = 12.dp)
                                 .padding(bottom = 12.dp)
+                                .pressScale()
                                 .doubleBezelCard(
                                     shape = miniCardShape,
                                     glowBrush = miniGlowBrush,

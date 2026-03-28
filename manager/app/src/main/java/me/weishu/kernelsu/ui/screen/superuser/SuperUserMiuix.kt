@@ -81,6 +81,7 @@ import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.rememberGyroTilt
 import me.weishu.kernelsu.ui.util.rememberGyroGlowBrush
 import me.weishu.kernelsu.ui.util.doubleBezelCard
+import me.weishu.kernelsu.ui.util.pressScale
 import me.weishu.kernelsu.ui.util.ownerNameForUid
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
@@ -504,6 +505,7 @@ private fun GroupItem(
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .padding(bottom = 12.dp)
+            .pressScale()
             .graphicsLayer {
                 val inverseProgress = 1f - animatedProgress.value
                 alpha = animatedProgress.value
