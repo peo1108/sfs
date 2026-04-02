@@ -16,11 +16,11 @@ runs:
       run: |
         echo "=== Setting up KernelSU ==="
 
-        # Use setup.sh from this repository
+        # Use setup.sh from this repository's kernel/ directory
         KSU_SETUP="${{ github.workspace }}/kernel/setup.sh"
 
         if [ -f "$KSU_SETUP" ]; then
-          echo "Using local setup.sh"
+          echo "Using local setup.sh from repository"
           chmod +x "$KSU_SETUP"
           cd common
           bash "$KSU_SETUP" ${{ inputs.ksu_commit }}
@@ -36,22 +36,31 @@ runs:
       shell: bash
       run: |
         cat >> "${{ github.workspace }}/gki.fragment" << 'EOF'
-        # KernelSU Configuration
         CONFIG_KSU=y
         EOF
 
     - name: Extract KSU Version Info
-      id: ksu-version
       shell: bash
-      working-directory: ${{ github.workspace }}/kernel/common/KernelSU
       run: |
-        KSU_GIT_VERSION=$(git rev-list --count HEAD 2>/dev/null || echo "0")
-        KSU_GIT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "unknown")
-        KSU_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
-        KSU_VERSION=$((30000 + KSU_GIT_VERSION))
+        KSU_DIR=""
+        if [ -d "${{ github.workspace }}/kernel/common/KernelSU" ]; then
+          KSU_DIR="${{ github.workspace }}/kernel/common/KernelSU"
+        elif [ -d "${{ github.workspace }}/kernel/KernelSU" ]; then
+          KSU_DIR="${{ github.workspace }}/kernel/KernelSU"
+        fi
 
-        echo "KSU Version: $KSU_VERSION (tag: $KSU_GIT_TAG, commit: $KSU_COMMIT)"
+        if [ -n "$KSU_DIR" ]; then
+          cd "$KSU_DIR"
+          KSU_GIT_VERSION=$(git rev-list --count HEAD 2>/dev/null || echo "0")
+          KSU_GIT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "unknown")
+          KSU_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+          KSU_VERSION=$((30000 + KSU_GIT_VERSION))
 
-        echo "KSU_GIT_TAG=$KSU_GIT_TAG" >> $GITHUB_ENV
-        echo "KSU_VERSION=$KSU_VERSION" >> $GITHUB_ENV
-        echo "KSU_COMMIT=$KSU_COMMIT" >> $GITHUB_ENV
+          echo "KSU Version: $KSU_VERSION (tag: $KSU_GIT_TAG, commit: $KSU_COMMIT)"
+          echo "KSU_GIT_TAG=$KSU_GIT_TAG" >> $GITHUB_ENV
+          echo "KSU_VERSION=$KSU_VERSION" >> $GITHUB_ENV
+          echo "KSU_COMMIT=$KSU_COMMIT" >> $GITHUB_ENV
+        else
+          echo "⚠️ KernelSU directory not found"
+          find "${{ github.workspace }}/kernel" -name "KernelSU" -type d 2>/dev/null || true
+        fi
