@@ -1,80 +1,104 @@
 name: 'Setup KernelSU'
-description: 'Integrate KernelSU into the GKI kernel source tree'
+description: 'Integrate KernelSU into the GKI kernel source tree using this repository as source'
 
 inputs:
   ksu_commit:
-    description: 'KernelSU commit or tag (optional, defaults to latest tag)'
+    description: 'KernelSU commit or tag (unused, this repo IS the KernelSU source)'
     required: false
     type: string
 
 runs:
   using: composite
   steps:
-    - name: Download and Setup KernelSU
-      shell: bash
-      working-directory: ${{ github.workspace }}/kernel
-      run: |
-        echo "=== Setting up KernelSU ==="
-
-        # Use setup.sh from this repository's kernel/ directory
-        KSU_SETUP="${{ github.workspace }}/kernel/setup.sh"
-
-        if [ -f "$KSU_SETUP" ]; then
-          echo "Using local setup.sh from repository"
-          chmod +x "$KSU_SETUP"
-          cd common
-          bash "$KSU_SETUP" ${{ inputs.ksu_commit }}
-          cd ..
-        else
-          echo "Downloading setup.sh from repository"
-          cd common
-          curl -LSs "https://raw.githubusercontent.com/${{ github.repository }}/main/kernel/setup.sh" | bash -s ${{ inputs.ksu_commit }}
-          cd ..
-        fi
-
-    - name: Fix uapi Include Path
+    - name: Integrate KernelSU from This Repository
       shell: bash
       working-directory: ${{ github.workspace }}/kernel/common
       run: |
-        echo "=== Fixing uapi include path ==="
+        echo "=== Setting up KernelSU from this repository ==="
 
-        # Find the KernelSU root directory (where uapi/ lives)
-        KSU_ROOT=""
-        if [ -d "KernelSU" ]; then
-          KSU_ROOT="KernelSU"
-        elif [ -d "${{ github.workspace }}/kernel/KernelSU" ]; then
-          KSU_ROOT="${{ github.workspace }}/kernel/KernelSU"
+        REPO_ROOT="${{ github.workspace }}"
+        DRIVER_DIR="drivers"
+
+        # This repository IS the KernelSU project
+        # kernel/ directory contains the kernel module source
+        # uapi/ directory contains userspace API headers
+
+        # 1. Create symlink: drivers/kernelsu -> $REPO_ROOT/kernel
+        KSU_KERNEL_SRC="$REPO_ROOT/kernel"
+        if [ ! -d "$KSU_KERNEL_SRC" ]; then
+          echo "❌ ERROR: kernel/ directory not found at $KSU_KERNEL_SRC"
+          ls -la "$REPO_ROOT/"
+          exit 1
         fi
 
-        # Find the kernelsu driver directory (symlink target)
-        KSU_DRIVER=""
-        if [ -L "drivers/kernelsu" ]; then
-          KSU_DRIVER="drivers/kernelsu"
-        fi
+        LINK_TARGET=$(realpath --relative-to="$DRIVER_DIR" "$KSU_KERNEL_SRC")
+        ln -sf "$LINK_TARGET" "$DRIVER_DIR/kernelsu"
+        echo "✅ Symlink: $DRIVER_DIR/kernelsu -> $LINK_TARGET"
 
-        if [ -n "$KSU_ROOT" ] && [ -n "$KSU_DRIVER" ]; then
-          # The uapi/ directory is at KernelSU/uapi/ (root level)
-          # but the symlink points to KernelSU/kernel/ only
-          # We need uapi/ accessible from within the kernel module dir
-          UAPI_SRC="$KSU_ROOT/uapi"
-          if [ -d "$UAPI_SRC" ]; then
-            # Create symlink: drivers/kernelsu/uapi -> ../../KernelSU/uapi
-            UAPI_REL=$(realpath --relative-to="$KSU_DRIVER" "$UAPI_SRC")
-            ln -sf "$UAPI_REL" "$KSU_DRIVER/uapi"
-            echo "✅ Created uapi symlink: $KSU_DRIVER/uapi -> $UAPI_REL"
-            ls -la "$KSU_DRIVER/uapi/"
-          else
-            echo "⚠️ uapi/ not found at $UAPI_SRC"
-            echo "Looking for uapi directory..."
-            find . -name "uapi" -type d 2>/dev/null | head -10
-            find "$KSU_ROOT" -name "app_profile.h" -type f 2>/dev/null | head -10
+        # 2. Ensure uapi/ is accessible from within kernel module
+        # The user's kernel/include/uapi is a symlink to ../../uapi
+        # But after our symlink, the relative path may break
+        # Fix: create a direct symlink in the driver dir
+        UAPI_SRC="$REPO_ROOT/uapi"
+        if [ -d "$UAPI_SRC" ]; then
+          # Ensure drivers/kernelsu/uapi points to the actual uapi dir
+          UAPI_REL=$(realpath --relative-to="$DRIVER_DIR/kernelsu" "$UAPI_SRC")
+          rm -f "$DRIVER_DIR/kernelsu/uapi"
+          ln -sf "$UAPI_REL" "$DRIVER_DIR/kernelsu/uapi"
+          echo "✅ Symlink: drivers/kernelsu/uapi -> $UAPI_REL"
+
+          # Also fix include/uapi symlink
+          if [ -L "$DRIVER_DIR/kernelsu/include/uapi" ]; then
+            rm -f "$DRIVER_DIR/kernelsu/include/uapi"
+            UAPI_INCL_REL=$(realpath --relative-to="$DRIVER_DIR/kernelsu/include" "$UAPI_SRC")
+            ln -sf "$UAPI_INCL_REL" "$DRIVER_DIR/kernelsu/include/uapi"
+            echo "✅ Fixed: include/uapi -> $UAPI_INCL_REL"
           fi
-        else
-          echo "⚠️ KernelSU setup not detected properly"
-          echo "KSU_ROOT=$KSU_ROOT KSU_DRIVER=$KSU_DRIVER"
-          find . -name "kernelsu" -type l 2>/dev/null | head -5
-          find . -name "KernelSU" -type d -maxdepth 2 2>/dev/null | head -5
         fi
+
+        # 3. Add to drivers/Makefile if not already present
+        DRIVER_MK="$DRIVER_DIR/Makefile"
+        if ! grep -q "kernelsu" "$DRIVER_MK"; then
+          printf '\nobj-$(CONFIG_KSU) += kernelsu/\n' >> "$DRIVER_MK"
+          echo "✅ Added kernelsu to drivers/Makefile"
+        fi
+
+        # 4. Add to drivers/Kconfig if not already present
+        DRIVER_KC="$DRIVER_DIR/Kconfig"
+        if ! grep -q 'drivers/kernelsu/Kconfig' "$DRIVER_KC"; then
+          sed -i '/endmenu/i source "drivers/kernelsu/Kconfig"' "$DRIVER_KC"
+          echo "✅ Added kernelsu to drivers/Kconfig"
+        fi
+
+        # 5. Verify setup
+        echo ""
+        echo "=== KernelSU Setup Verification ==="
+        echo "Driver symlink:"
+        ls -la "$DRIVER_DIR/kernelsu"
+        echo ""
+        echo "Key files:"
+        ls -la "$DRIVER_DIR/kernelsu/Kbuild" 2>/dev/null || echo "⚠️ Kbuild not found"
+        ls -la "$DRIVER_DIR/kernelsu/Kconfig" 2>/dev/null || echo "⚠️ Kconfig not found"
+        ls -la "$DRIVER_DIR/kernelsu/include/klog.h" 2>/dev/null || echo "⚠️ klog.h not found"
+        ls -la "$DRIVER_DIR/kernelsu/uapi/app_profile.h" 2>/dev/null || echo "⚠️ app_profile.h not found"
+        echo "=== Setup complete ==="
+
+    - name: Create Git Repo for Version Detection
+      shell: bash
+      run: |
+        # KernelSU's Kbuild uses git to detect version
+        # Since we're using files from the checkout, we need to ensure
+        # the git repo is accessible from the kernel source tree
+        cd "${{ github.workspace }}"
+        KSU_GIT_VERSION=$(git rev-list --count HEAD 2>/dev/null || echo "0")
+        KSU_GIT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "unknown")
+        KSU_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+        KSU_VERSION=$((30000 + KSU_GIT_VERSION))
+
+        echo "KSU Version: $KSU_VERSION (tag: $KSU_GIT_TAG, commit: $KSU_COMMIT)"
+        echo "KSU_GIT_TAG=$KSU_GIT_TAG" >> $GITHUB_ENV
+        echo "KSU_VERSION=$KSU_VERSION" >> $GITHUB_ENV
+        echo "KSU_COMMIT=$KSU_COMMIT" >> $GITHUB_ENV
 
     - name: Enable KernelSU Config
       shell: bash
@@ -82,28 +106,3 @@ runs:
         cat >> "${{ github.workspace }}/gki.fragment" << 'EOF'
         CONFIG_KSU=y
         EOF
-
-    - name: Extract KSU Version Info
-      shell: bash
-      run: |
-        KSU_DIR=""
-        if [ -d "${{ github.workspace }}/kernel/common/KernelSU" ]; then
-          KSU_DIR="${{ github.workspace }}/kernel/common/KernelSU"
-        elif [ -d "${{ github.workspace }}/kernel/KernelSU" ]; then
-          KSU_DIR="${{ github.workspace }}/kernel/KernelSU"
-        fi
-
-        if [ -n "$KSU_DIR" ]; then
-          cd "$KSU_DIR"
-          KSU_GIT_VERSION=$(git rev-list --count HEAD 2>/dev/null || echo "0")
-          KSU_GIT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "unknown")
-          KSU_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
-          KSU_VERSION=$((30000 + KSU_GIT_VERSION))
-
-          echo "KSU Version: $KSU_VERSION (tag: $KSU_GIT_TAG, commit: $KSU_COMMIT)"
-          echo "KSU_GIT_TAG=$KSU_GIT_TAG" >> $GITHUB_ENV
-          echo "KSU_VERSION=$KSU_VERSION" >> $GITHUB_ENV
-          echo "KSU_COMMIT=$KSU_COMMIT" >> $GITHUB_ENV
-        else
-          echo "⚠️ KernelSU directory not found"
-        fi
