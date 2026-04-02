@@ -1,0 +1,274 @@
+name: GKI Kernel Build Process
+
+permissions:
+  contents: write
+  actions: write
+
+on:
+  workflow_call:
+    inputs:
+      kernel_version:
+        required: true
+        type: string
+      ksu_commit:
+        required: false
+        type: string
+      susfs_commit:
+        required: false
+        type: string
+      feature_set:
+        required: true
+        type: string
+
+jobs:
+  build-gki:
+    name: "Build ${{ inputs.kernel_version }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Parse Kernel Version
+      id: parse
+      run: |
+        # Format: 6.6.89-android15-2025-06
+        INPUT_VERSION="${{ inputs.kernel_version }}"
+
+        IFS='-' read -r KERNEL_PART ANDROID_PART REST <<< "$INPUT_VERSION"
+
+        KERNEL_VERSION="${KERNEL_PART%.*}"
+        SUB_LEVEL="${KERNEL_PART##*.}"
+        ANDROID_VERSION="$ANDROID_PART"
+        OS_PATCH_LEVEL="$REST"
+
+        echo "Parsed: KERNEL=$KERNEL_VERSION, SUB=$SUB_LEVEL, ANDROID=$ANDROID_VERSION, PATCH=$OS_PATCH_LEVEL"
+
+        echo "ANDROID_VERSION=$ANDROID_VERSION" >> "$GITHUB_ENV"
+        echo "KERNEL_VERSION=$KERNEL_VERSION" >> "$GITHUB_ENV"
+        echo "SUB_LEVEL=$SUB_LEVEL" >> "$GITHUB_ENV"
+        echo "OS_PATCH_LEVEL=$OS_PATCH_LEVEL" >> "$GITHUB_ENV"
+
+        echo "android_version=$ANDROID_VERSION" >> $GITHUB_OUTPUT
+        echo "kernel_version=$KERNEL_VERSION" >> $GITHUB_OUTPUT
+        echo "sub_level=$SUB_LEVEL" >> $GITHUB_OUTPUT
+        echo "os_patch_level=$OS_PATCH_LEVEL" >> $GITHUB_OUTPUT
+
+    - name: Free Disk Space
+      uses: endersonmenezes/free-disk-space@v3
+      with:
+        remove_android: true
+        remove_dotnet: true
+        remove_haskell: true
+        remove_tool_cache: true
+        remove_swap: true
+        remove_packages: "azure-cli google-cloud-cli microsoft-edge-stable google-chrome-stable firefox postgresql* temurin-* *llvm* mysql* dotnet-sdk-*"
+        remove_packages_one_command: true
+        remove_folders: "/usr/share/swift /usr/share/miniconda /usr/share/az* /usr/local/lib/node_modules /usr/local/share/chromium /usr/local/share/powershell /usr/local/julia /usr/local/aws-cli /usr/local/aws-sam-cli /usr/share/gradle"
+        rm_cmd: "rmz"
+        rmz_version: "3.1.1"
+        testing: false
+
+    - name: Setup Build Environment
+      run: |
+        mkdir -p "$GITHUB_WORKSPACE/kernel"
+        mkdir -p "$GITHUB_WORKSPACE/git-repo"
+
+        # Install repo tool
+        curl -L https://storage.googleapis.com/git-repo-downloads/repo \
+          -o "$GITHUB_WORKSPACE/git-repo/repo"
+        chmod +x "$GITHUB_WORKSPACE/git-repo/repo"
+        echo "$GITHUB_WORKSPACE/git-repo" >> "$GITHUB_PATH"
+
+        # Clone kernel patches (for SUSFS fixes)
+        git clone --depth=1 https://github.com/WildKernels/kernel_patches.git \
+          "$GITHUB_WORKSPACE/kernel_patches"
+
+        # Clone AnyKernel3
+        git clone --depth=1 https://github.com/osm0sis/AnyKernel3.git \
+          "$GITHUB_WORKSPACE/AnyKernel3"
+
+    - name: Download Kernel Repository
+      uses: ./.github/actions/download-kernel
+      with:
+        android_version: ${{ steps.parse.outputs.android_version }}
+        kernel_version: ${{ steps.parse.outputs.kernel_version }}
+        os_patch_level: ${{ steps.parse.outputs.os_patch_level }}
+
+    - name: Extract Sublevel
+      id: extract
+      run: |
+        SUBLEVEL="$SUB_LEVEL"
+        if [[ -f "$GITHUB_WORKSPACE/kernel/common/Makefile" ]]; then
+          EXTRACTED=$(grep '^SUBLEVEL = ' "$GITHUB_WORKSPACE/kernel/common/Makefile" | awk '{print $3}')
+          [[ -n "$EXTRACTED" ]] && SUBLEVEL="$EXTRACTED"
+        fi
+
+        FILE_NAME="$KERNEL_VERSION.$SUBLEVEL-$ANDROID_VERSION-$OS_PATCH_LEVEL"
+        echo "SUBLEVEL=$SUBLEVEL" >> $GITHUB_ENV
+        echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
+        echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
+        echo "sublevel=$SUBLEVEL" >> $GITHUB_OUTPUT
+
+    - name: Fix Less Than 6.6.50 Builds
+      if: ${{ steps.parse.outputs.android_version == 'android15' && steps.parse.outputs.kernel_version == '6.6'}}
+      working-directory: ${{ github.workspace }}/kernel/common
+      run: |
+        if ! grep -qxF '#include <trace/hooks/fs.h>' ./fs/namespace.c; then
+            sed -i '/#include <trace\/hooks\/blk.h>/a #include <trace\/hooks\/fs.h>' ./fs/namespace.c
+        fi
+
+    - name: Setup KernelSU
+      if: contains(inputs.feature_set, 'KSU')
+      uses: ./.github/actions/setup-ksu
+      with:
+        ksu_commit: ${{ inputs.ksu_commit }}
+
+    - name: Setup SUSFS
+      if: contains(inputs.feature_set, 'SUSFS')
+      uses: ./.github/actions/setup-susfs
+      with:
+        android_version: ${{ steps.parse.outputs.android_version }}
+        kernel_version: ${{ steps.parse.outputs.kernel_version }}
+        sublevel: ${{ steps.extract.outputs.sublevel }}
+        susfs_commit: ${{ inputs.susfs_commit }}
+
+    - name: Configure Kernel Options
+      uses: ./.github/actions/configure-kernel
+      with:
+        kernel_version: ${{ steps.parse.outputs.kernel_version }}
+
+    - name: Build Kernel
+      working-directory: ${{ github.workspace }}/kernel
+      run: |
+        set -ex
+
+        # Copy fragment to kernel tree for bazel
+        cp "$GITHUB_WORKSPACE/gki.fragment" common/arch/arm64/configs/gki.fragment
+
+        # Build using bazel (for android15-6.6+)
+        if [ -f "build/build.sh" ]; then
+          echo "=== Building with build.sh ==="
+          SKIP_MRPROPER=1 \
+          GKI_DEFCONFIG_FRAGMENT="$GITHUB_WORKSPACE/gki.fragment" \
+          LTO=thin \
+          BUILD_CONFIG=common/build.config.gki.aarch64 \
+          build/build.sh || exit 1
+        else
+          echo "=== Building with bazel ==="
+          tools/bazel build \
+            --config=fast \
+            --lto=none \
+            --defconfig_fragment=//common:arch/arm64/configs/gki.fragment \
+            //common:kernel_aarch64_dist || exit 1
+        fi
+
+        echo "=== Build completed ==="
+
+    - name: Prepare AnyKernel3 Zip
+      run: |
+        # Configure AnyKernel3 for TB322FC
+        cat > "$GITHUB_WORKSPACE/AnyKernel3/anykernel.sh" << 'ANYKERNEL_EOF'
+        # AnyKernel3 Ramdisk Mod Script
+        # osm0sis @ xda-developers
+        # KernelSU + SUSFS for Lenovo Y700 Gen4 (TB322FC)
+
+        ## AnyKernel setup
+        properties() { '
+        kernel.string=KernelSU-SUSFS by peo1108
+        do.devicecheck=1
+        do.modules=0
+        do.systemless=1
+        do.cleanup=1
+        do.cleanuponabort=0
+        device.name1=TB322FC
+        device.name2=tb322fc
+        device.name3=Y700
+        supported.versions=15
+        supported.patchlevels=
+        '; }
+
+        ## AnyKernel boot install
+        block=auto;
+        is_slot_device=1;
+        ramdisk_compression=auto;
+        patch_vbmeta_flag=auto;
+
+        . tools/ak3-core.sh;
+
+        set_perm_recursive 0 0 755 644 $ramdisk/*;
+        dump_boot;
+        write_boot;
+        ANYKERNEL_EOF
+
+        # Copy kernel Image
+        if [ -f "$GITHUB_WORKSPACE/kernel/out/$ANDROID_VERSION-$KERNEL_VERSION/dist/Image" ]; then
+          cp "$GITHUB_WORKSPACE/kernel/out/$ANDROID_VERSION-$KERNEL_VERSION/dist/Image" \
+             "$GITHUB_WORKSPACE/AnyKernel3/Image"
+        elif [ -f "$GITHUB_WORKSPACE/kernel/bazel-bin/common/kernel_aarch64/Image" ]; then
+          cp "$GITHUB_WORKSPACE/kernel/bazel-bin/common/kernel_aarch64/Image" \
+             "$GITHUB_WORKSPACE/AnyKernel3/Image"
+        else
+          echo "ERROR: Image file not found!"
+          find "$GITHUB_WORKSPACE/kernel" -name "Image" -type f 2>/dev/null || true
+          exit 1
+        fi
+
+        echo "=== AnyKernel3 package ready ==="
+        ls -la "$GITHUB_WORKSPACE/AnyKernel3/Image"
+
+    - name: Scan Patch Rejects
+      id: scan
+      if: always()
+      run: |
+        REJECTS_DIR="$GITHUB_WORKSPACE/patch-rejects"
+        mkdir -p "$REJECTS_DIR"
+        mapfile -t REJS < <(find "$GITHUB_WORKSPACE/kernel" -type f -name '*.rej')
+        REJ_COUNT=${#REJS[@]}
+        echo "Found $REJ_COUNT .rej files"
+        echo "REJ_COUNT=$REJ_COUNT" >> $GITHUB_ENV
+        echo "rej_count=$REJ_COUNT" >> $GITHUB_OUTPUT
+        if [ "$REJ_COUNT" -gt 0 ]; then
+          for REJ in "${REJS[@]}"; do
+            REL="${REJ#"$GITHUB_WORKSPACE/kernel"/}"
+            DEST="$REJECTS_DIR/$REL"
+            mkdir -p "$(dirname "$DEST")"
+            cp "$REJ" "$DEST"
+            echo "$REL" >> "$REJECTS_DIR/index.txt"
+          done
+        fi
+
+    - name: Upload AnyKernel3 Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ steps.extract.outputs.file_name }}-KernelSU-SUSFS-TB322FC-AnyKernel3
+        path: ${{ github.workspace }}/AnyKernel3/**
+        if-no-files-found: ignore
+        compression-level: 9
+
+    - name: Upload Rejects
+      if: ${{ always() && steps.scan.outputs.rej_count > 0 }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ steps.extract.outputs.file_name }}-Rejects
+        path: patch-rejects/
+        if-no-files-found: ignore
+        compression-level: 9
+
+    - name: Build Summary
+      if: always()
+      run: |
+        echo "============================================"
+        echo "  Build Summary - Lenovo Y700 Gen4 (TB322FC)"
+        echo "============================================"
+        echo "Android Version : $ANDROID_VERSION"
+        echo "Kernel Version  : $KERNEL_VERSION"
+        echo "Sub Level       : $SUB_LEVEL"
+        echo "Patch Level     : $OS_PATCH_LEVEL"
+        echo "Features        : ${{ inputs.feature_set }}"
+        echo "KSU Version     : ${KSU_VERSION:-N/A}"
+        echo "KSU Tag         : ${KSU_GIT_TAG:-N/A}"
+        echo "SUSFS Version   : ${SUSFS_VERSION:-N/A}"
+        echo "Patch Rejects   : ${REJ_COUNT:-0}"
+        echo "============================================"

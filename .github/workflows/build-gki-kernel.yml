@@ -1,0 +1,59 @@
+name: Build GKI Kernel (KernelSU + SUSFS)
+
+permissions:
+  contents: write
+  actions: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      kernel_build_version:
+        description: 'Kernel Version to Build'
+        type: choice
+        options:
+          - a15-6-6
+        default: a15-6-6
+      feature_set:
+        description: 'Feature Set'
+        type: choice
+        options:
+          - KSU+SUSFS
+          - KSU
+        default: KSU+SUSFS
+      ksu_commit:
+        description: 'KSU Commit (optional, defaults to latest tag)'
+        type: string
+        default: ''
+        required: false
+      susfs_commit:
+        description: 'SUSFS Commit (optional)'
+        type: string
+        default: ''
+        required: false
+
+jobs:
+  fetch-commits:
+    runs-on: ubuntu-latest
+    outputs:
+      ksu_commit: ${{ steps.fetch.outputs.ksu_commit }}
+      susfs_commit: ${{ steps.fetch.outputs.susfs_commit }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Resolve Commits
+        id: fetch
+        run: |
+          echo "ksu_commit=${{ inputs.ksu_commit }}" >> $GITHUB_OUTPUT
+          echo "susfs_commit=${{ inputs.susfs_commit }}" >> $GITHUB_OUTPUT
+
+  build-a15-6-6:
+    if: ${{ inputs.kernel_build_version == 'a15-6-6' }}
+    needs: fetch-commits
+    uses: ./.github/workflows/prepare.yml
+    with:
+      config_file: .github/kernel-config/a15-6.6.json
+      ksu_commit: ${{ needs.fetch-commits.outputs.ksu_commit }}
+      susfs_commit: ${{ needs.fetch-commits.outputs.susfs_commit }}
+      feature_set: ${{ inputs.feature_set || 'KSU+SUSFS' }}
+    secrets: inherit

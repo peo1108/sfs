@@ -1,0 +1,84 @@
+name: 'Package AnyKernel3'
+description: 'Package kernel Image into AnyKernel3 flashable zip for TB322FC'
+
+inputs:
+  kernel_version:
+    description: 'Full kernel version string'
+    required: true
+  android_version:
+    description: 'Android version'
+    required: true
+  file_name:
+    description: 'Output file name prefix'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Clone AnyKernel3
+      shell: bash
+      run: |
+        if [ ! -d "${{ github.workspace }}/AnyKernel3" ]; then
+          git clone https://github.com/osm0sis/AnyKernel3.git \
+            --depth=1 "${{ github.workspace }}/AnyKernel3"
+        fi
+
+    - name: Configure AnyKernel3 for TB322FC
+      shell: bash
+      working-directory: ${{ github.workspace }}/AnyKernel3
+      run: |
+        cat > anykernel.sh << 'ANYKERNEL_EOF'
+        # AnyKernel3 Ramdisk Mod Script
+        # osm0sis @ xda-developers
+        # KernelSU + SUSFS for Lenovo Y700 Gen4 (TB322FC)
+
+        ## AnyKernel setup
+        properties() { '
+        kernel.string=KernelSU-SUSFS by peo1108
+        do.devicecheck=1
+        do.modules=0
+        do.systemless=1
+        do.cleanup=1
+        do.cleanuponabort=0
+        device.name1=TB322FC
+        device.name2=tb322fc
+        device.name3=Y700
+        supported.versions=15
+        supported.patchlevels=
+        '; }
+
+        ## AnyKernel boot install
+        block=auto;
+        is_slot_device=1;
+        ramdisk_compression=auto;
+        patch_vbmeta_flag=auto;
+
+        . tools/ak3-core.sh;
+
+        set_perm_recursive 0 0 755 644 $ramdisk/*;
+        dump_boot;
+        write_boot;
+        ANYKERNEL_EOF
+
+        echo "=== AnyKernel3 configured for TB322FC ==="
+
+    - name: Copy Kernel Image
+      shell: bash
+      run: |
+        # Try different build output locations
+        if [ -f "${{ github.workspace }}/kernel/out/${{ inputs.android_version }}-${{ inputs.kernel_version }}/dist/Image" ]; then
+          cp "${{ github.workspace }}/kernel/out/${{ inputs.android_version }}-${{ inputs.kernel_version }}/dist/Image" \
+             "${{ github.workspace }}/AnyKernel3/Image"
+          echo "Copied Image from out/dist/"
+        elif [ -f "${{ github.workspace }}/kernel/bazel-bin/common/kernel_aarch64/Image" ]; then
+          cp "${{ github.workspace }}/kernel/bazel-bin/common/kernel_aarch64/Image" \
+             "${{ github.workspace }}/AnyKernel3/Image"
+          echo "Copied Image from bazel-bin/"
+        else
+          echo "ERROR: Image file not found in any expected location!"
+          find "${{ github.workspace }}/kernel" -name "Image" -type f 2>/dev/null || true
+          exit 1
+        fi
+
+        echo "=== AnyKernel3 package ready ==="
+        ls -la "${{ github.workspace }}/AnyKernel3/Image"

@@ -1,0 +1,5 @@
+{
+  "include": [
+    {"kernel_version": "6.6.89-android15-2025-06"}
+  ]
+}
