@@ -32,6 +32,50 @@ runs:
           cd ..
         fi
 
+    - name: Fix uapi Include Path
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel/common
+      run: |
+        echo "=== Fixing uapi include path ==="
+
+        # Find the KernelSU root directory (where uapi/ lives)
+        KSU_ROOT=""
+        if [ -d "KernelSU" ]; then
+          KSU_ROOT="KernelSU"
+        elif [ -d "${{ github.workspace }}/kernel/KernelSU" ]; then
+          KSU_ROOT="${{ github.workspace }}/kernel/KernelSU"
+        fi
+
+        # Find the kernelsu driver directory (symlink target)
+        KSU_DRIVER=""
+        if [ -L "drivers/kernelsu" ]; then
+          KSU_DRIVER="drivers/kernelsu"
+        fi
+
+        if [ -n "$KSU_ROOT" ] && [ -n "$KSU_DRIVER" ]; then
+          # The uapi/ directory is at KernelSU/uapi/ (root level)
+          # but the symlink points to KernelSU/kernel/ only
+          # We need uapi/ accessible from within the kernel module dir
+          UAPI_SRC="$KSU_ROOT/uapi"
+          if [ -d "$UAPI_SRC" ]; then
+            # Create symlink: drivers/kernelsu/uapi -> ../../KernelSU/uapi
+            UAPI_REL=$(realpath --relative-to="$KSU_DRIVER" "$UAPI_SRC")
+            ln -sf "$UAPI_REL" "$KSU_DRIVER/uapi"
+            echo "✅ Created uapi symlink: $KSU_DRIVER/uapi -> $UAPI_REL"
+            ls -la "$KSU_DRIVER/uapi/"
+          else
+            echo "⚠️ uapi/ not found at $UAPI_SRC"
+            echo "Looking for uapi directory..."
+            find . -name "uapi" -type d 2>/dev/null | head -10
+            find "$KSU_ROOT" -name "app_profile.h" -type f 2>/dev/null | head -10
+          fi
+        else
+          echo "⚠️ KernelSU setup not detected properly"
+          echo "KSU_ROOT=$KSU_ROOT KSU_DRIVER=$KSU_DRIVER"
+          find . -name "kernelsu" -type l 2>/dev/null | head -5
+          find . -name "KernelSU" -type d -maxdepth 2 2>/dev/null | head -5
+        fi
+
     - name: Enable KernelSU Config
       shell: bash
       run: |
@@ -62,5 +106,4 @@ runs:
           echo "KSU_COMMIT=$KSU_COMMIT" >> $GITHUB_ENV
         else
           echo "⚠️ KernelSU directory not found"
-          find "${{ github.workspace }}/kernel" -name "KernelSU" -type d 2>/dev/null || true
         fi
