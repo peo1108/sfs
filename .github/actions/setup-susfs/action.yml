@@ -38,13 +38,12 @@ runs:
         echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
         echo "SUSFS branch: $SUSFS_BRANCH, version: $SUSFS_VERSION"
 
-    - name: Apply SUSFS Source Files to Kernel
+    - name: Apply SUSFS Source Files to GKI Kernel
       shell: bash
       working-directory: ${{ github.workspace }}/kernel/common
       run: |
-        echo "=== Copying SUSFS source files ==="
+        echo "=== Copying SUSFS source files to GKI kernel ==="
 
-        # Copy SUSFS kernel source files
         cp "${{ github.workspace }}/susfs4ksu/kernel_patches/fs/"* \
            "${{ github.workspace }}/kernel/common/fs/"
         cp "${{ github.workspace }}/susfs4ksu/kernel_patches/include/linux/"* \
@@ -52,7 +51,6 @@ runs:
 
         echo "=== Applying SUSFS GKI kernel patch ==="
 
-        # Apply the GKI-specific SUSFS patch (adds susfs to kernel build system)
         PATCH_FILE="50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch"
         cp "${{ github.workspace }}/susfs4ksu/kernel_patches/${PATCH_FILE}" ./
         patch -p1 < "${PATCH_FILE}" || true
@@ -61,61 +59,111 @@ runs:
 
     - name: Apply SUSFS KernelSU Integration Patch
       shell: bash
-      working-directory: ${{ github.workspace }}/kernel/common
+      working-directory: ${{ github.workspace }}
       run: |
         echo "=== Applying SUSFS-KernelSU integration patch ==="
+        echo "Working directory: $(pwd)"
 
-        # This patch adds CONFIG_KSU_SUSFS* Kconfig entries to KernelSU's Kconfig
-        # and integrates SUSFS hooks into KernelSU source code
-        KSU_PATCH=$(find "${{ github.workspace }}/susfs4ksu/kernel_patches" -name "*enable_susfs_for_ksu*" -o -name "*ksu_susfs*" | head -1)
+        # The 10_enable_susfs_for_ksu.patch uses paths like:
+        #   kernel/Kbuild, kernel/core/init.c, kernel/Kconfig, etc.
+        # These match THIS REPO's structure (peo1108/sfs),
+        # so we apply from $GITHUB_WORKSPACE (repo root) with -p1
+
+        KSU_PATCH=$(find "${{ github.workspace }}/susfs4ksu/kernel_patches" \
+          -name "*enable_susfs_for_ksu*" -o -name "*ksu_susfs*" | head -1)
 
         if [ -n "$KSU_PATCH" ]; then
           echo "Found KSU integration patch: $KSU_PATCH"
-          cp "$KSU_PATCH" ./
-          patch -p1 < "$(basename "$KSU_PATCH")" || true
+          echo "Applying from repo root to match kernel/Kbuild, kernel/core/init.c paths..."
+          patch -p1 --no-backup-if-mismatch < "$KSU_PATCH" || true
         else
-          echo "KSU integration patch not found in susfs4ksu repo"
-          echo "Listing available patches:"
+          echo "⚠️ KSU integration patch not found"
           find "${{ github.workspace }}/susfs4ksu/kernel_patches" -name "*.patch" -type f
-          echo ""
-          echo "Attempting to apply all numbered patches..."
-          for p in "${{ github.workspace }}/susfs4ksu/kernel_patches/"*.patch; do
-            if [ -f "$p" ] && [[ "$(basename "$p")" != 50_* ]]; then
-              echo "Applying: $(basename "$p")"
-              cp "$p" ./
-              patch -p1 < "$(basename "$p")" || true
-            fi
-          done
         fi
 
-        # Verify Kconfig entries exist
-        KSU_KCONFIG=$(find . -path "*/kernelsu/Kconfig" -o -path "*/KernelSU/kernel/Kconfig" | head -1)
-        if [ -n "$KSU_KCONFIG" ]; then
-          echo "=== KernelSU Kconfig contents ==="
-          cat "$KSU_KCONFIG"
-          if grep -q "KSU_SUSFS" "$KSU_KCONFIG"; then
-            echo "✅ SUSFS Kconfig entries found!"
-          else
-            echo "⚠️ SUSFS Kconfig entries NOT found, adding manually..."
-            # Manually add SUSFS Kconfig entries before endmenu
-            sed -i '/^endmenu/i \
-        config KSU_SUSFS\n\tbool "KernelSU addon - SUSFS"\n\tdepends on KSU\n\tdefault y\n\thelp\n\t  Addon patch for KernelSU to enable SUSFS.\n\
-        config KSU_SUSFS_SUS_PATH\n\tbool "SUSFS - Enable sus_path"\n\tdepends on KSU_SUSFS\n\tdefault y\n\
-        config KSU_SUSFS_SUS_MOUNT\n\tbool "SUSFS - Enable sus_mount"\n\tdepends on KSU_SUSFS\n\tdefault y\n\
-        config KSU_SUSFS_SUS_KSTAT\n\tbool "SUSFS - Enable sus_kstat"\n\tdepends on KSU_SUSFS\n\tdefault y\n\
-        config KSU_SUSFS_SUS_MAP\n\tbool "SUSFS - Enable sus_maps"\n\tdepends on KSU_SUSFS\n\tdefault y\n\
-        config KSU_SUSFS_SPOOF_UNAME\n\tbool "SUSFS - Enable uname spoofing"\n\tdepends on KSU_SUSFS\n\tdefault y\n\
-        config KSU_SUSFS_ENABLE_LOG\n\tbool "SUSFS - Enable logging"\n\tdepends on KSU_SUSFS\n\tdefault y\n\
-        config KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS\n\tbool "SUSFS - Hide KSU and SUSFS symbols"\n\tdepends on KSU_SUSFS\n\tdefault y\n\
-        config KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG\n\tbool "SUSFS - Spoof cmdline or bootconfig"\n\tdepends on KSU_SUSFS\n\tdefault y\n\
-        config KSU_SUSFS_OPEN_REDIRECT\n\tbool "SUSFS - Enable open redirect"\n\tdepends on KSU_SUSFS\n\tdefault y\n' "$KSU_KCONFIG"
-            echo "=== Updated Kconfig ==="
-            cat "$KSU_KCONFIG"
-          fi
+        # Verify Kconfig has SUSFS entries
+        KSU_KCONFIG="${{ github.workspace }}/kernel/Kconfig"
+        if [ -f "$KSU_KCONFIG" ] && grep -q "KSU_SUSFS" "$KSU_KCONFIG"; then
+          echo "✅ SUSFS Kconfig entries found in kernel/Kconfig!"
         else
-          echo "❌ KernelSU Kconfig not found!"
-          find . -name "Kconfig" | head -20
+          echo "⚠️ Patch may have partially failed, adding SUSFS Kconfig entries manually..."
+          # Find the correct Kconfig
+          if [ -f "$KSU_KCONFIG" ]; then
+            TARGET_KC="$KSU_KCONFIG"
+          else
+            echo "kernel/Kconfig not found, looking for alternatives..."
+            TARGET_KC=$(find "${{ github.workspace }}" -path "*/kernelsu/Kconfig" -not -path "*/susfs4ksu/*" | head -1)
+          fi
+
+          if [ -n "$TARGET_KC" ] && [ -f "$TARGET_KC" ]; then
+            echo "Using Kconfig at: $TARGET_KC"
+            if ! grep -q "KSU_SUSFS" "$TARGET_KC"; then
+              # Insert SUSFS Kconfig before endmenu
+              cat >> "$TARGET_KC" << 'KCONFIG_EOF'
+
+        config KSU_SUSFS
+        	bool "KernelSU addon - SUSFS"
+        	depends on KSU
+        	default y
+        	help
+        	  Addon root-hiding patch for KernelSU.
+
+        config KSU_SUSFS_SUS_PATH
+        	bool "Enable sus_path"
+        	depends on KSU_SUSFS
+        	default y
+
+        config KSU_SUSFS_SUS_MOUNT
+        	bool "Enable sus_mount"
+        	depends on KSU_SUSFS
+        	default y
+
+        config KSU_SUSFS_SUS_KSTAT
+        	bool "Enable sus_kstat"
+        	depends on KSU_SUSFS
+        	default y
+
+        config KSU_SUSFS_SUS_MAP
+        	bool "Enable sus_maps"
+        	depends on KSU_SUSFS
+        	default y
+
+        config KSU_SUSFS_SPOOF_UNAME
+        	bool "Enable uname spoofing"
+        	depends on KSU_SUSFS
+        	default y
+
+        config KSU_SUSFS_ENABLE_LOG
+        	bool "Enable logging"
+        	depends on KSU_SUSFS
+        	default y
+
+        config KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS
+        	bool "Hide KSU and SUSFS symbols"
+        	depends on KSU_SUSFS
+        	default y
+
+        config KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG
+        	bool "Spoof cmdline or bootconfig"
+        	depends on KSU_SUSFS
+        	default y
+
+        config KSU_SUSFS_OPEN_REDIRECT
+        	bool "Enable open redirect"
+        	depends on KSU_SUSFS
+        	default y
+        KCONFIG_EOF
+              echo "✅ SUSFS Kconfig entries added manually to $TARGET_KC"
+            fi
+          else
+            echo "❌ No suitable Kconfig found!"
+          fi
         fi
+
+        echo ""
+        echo "=== Verify SUSFS integration ==="
+        echo "--- kernel/Kconfig tail ---"
+        tail -20 "${{ github.workspace }}/kernel/Kconfig" 2>/dev/null || echo "N/A"
 
     - name: Apply SUSFS Sublevel Fixes
       shell: bash
@@ -128,17 +176,19 @@ runs:
 
         if [[ "${{ inputs.android_version }}" == "android15" && "${{ inputs.kernel_version }}" == "6.6" ]]; then
           if [[ "$SUBLEVEL" -le 92 ]]; then
-            if [ -f "${{ github.workspace }}/kernel_patches/wild/susfs_fix_patches/v${SUSFS_VERSION}/a15-6.6/base.c.patch" ]; then
+            PATCH="${{ github.workspace }}/kernel_patches/wild/susfs_fix_patches/v${SUSFS_VERSION}/a15-6.6/base.c.patch"
+            if [ -f "$PATCH" ]; then
               echo "Applying base.c fix for sublevel <= 92"
-              cp "${{ github.workspace }}/kernel_patches/wild/susfs_fix_patches/v${SUSFS_VERSION}/a15-6.6/base.c.patch" ./
+              cp "$PATCH" ./
               patch -p1 < base.c.patch || true
             fi
           fi
 
           if [[ "$SUBLEVEL" -le 58 ]]; then
-            if [ -f "${{ github.workspace }}/kernel_patches/wild/susfs_fix_patches/v${SUSFS_VERSION}/a15-6.6/task_mmu.c.patch" ]; then
+            PATCH="${{ github.workspace }}/kernel_patches/wild/susfs_fix_patches/v${SUSFS_VERSION}/a15-6.6/task_mmu.c.patch"
+            if [ -f "$PATCH" ]; then
               echo "Applying task_mmu.c fix for sublevel <= 58"
-              cp "${{ github.workspace }}/kernel_patches/wild/susfs_fix_patches/v${SUSFS_VERSION}/a15-6.6/task_mmu.c.patch" ./
+              cp "$PATCH" ./
               patch -p1 < task_mmu.c.patch || true
             fi
           fi
@@ -148,7 +198,6 @@ runs:
       shell: bash
       run: |
         cat >> "${{ github.workspace }}/gki.fragment" << 'EOF'
-        # SUSFS Configuration
         CONFIG_KSU_SUSFS=y
         CONFIG_KSU_SUSFS_SUS_PATH=y
         CONFIG_KSU_SUSFS_SUS_MOUNT=y
