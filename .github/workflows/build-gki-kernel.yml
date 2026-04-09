@@ -39,7 +39,7 @@ jobs:
       susfs_commit: ${{ steps.fetch.outputs.susfs_commit }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Resolve Commits
         id: fetch
