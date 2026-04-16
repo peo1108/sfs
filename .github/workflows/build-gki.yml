@@ -28,7 +28,7 @@ jobs:
 
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Parse Kernel Version
       id: parse
@@ -240,7 +240,7 @@ jobs:
         fi
 
     - name: Upload AnyKernel3 Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ steps.extract.outputs.file_name }}-KernelSU-SUSFS-TB322FC-AnyKernel3
         path: ${{ github.workspace }}/AnyKernel3/**
@@ -249,7 +249,7 @@ jobs:
 
     - name: Upload Rejects
       if: ${{ always() && steps.scan.outputs.rej_count > 0 }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ steps.extract.outputs.file_name }}-Rejects
         path: patch-rejects/
